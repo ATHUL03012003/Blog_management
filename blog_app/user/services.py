@@ -4,7 +4,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from django.conf import settings        
-from .enum import UserRole
+from common.enum import UserRole
 User = get_user_model()
 
 
@@ -56,13 +56,18 @@ class GoogleAuthService:
             return None
 
         email = idinfo["email"]
-        username=email
-
+        base_username = email.split("@")[0]
+        username = base_username
+        counter = 1
+        while User.objects.filter(username=username).exists():
+            username = f"{base_username}{counter}"
+            counter += 1
         user, created = User.objects.get_or_create(
             email=email,
             defaults={
                 "username": username,
-                "is_verified": True
+                "is_verified": True,
+                "role": UserRole.READER
             }
         )
 
@@ -71,6 +76,7 @@ class GoogleAuthService:
         return {
             "refresh": str(refresh),
             "access": str(refresh.access_token),
+            "created": created
         }
 
 

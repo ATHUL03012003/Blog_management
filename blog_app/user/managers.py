@@ -1,5 +1,5 @@
 from django.contrib.auth.models import BaseUserManager
-from .enum import UserRole
+from common.enum import UserRole
 
 
 class UserManager(BaseUserManager):
@@ -28,6 +28,12 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("role", UserRole.SUPERADMIN)
 
+        if extra_fields.get("is_staff") is not True:
+            raise ValueError("Superuser must have is_staff=True")
+
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError("Superuser must have is_superuser=True")
+            
         if extra_fields.get("role") != UserRole.SUPERADMIN:
             raise ValueError("Superuser must have role SUPERADMIN")
 
