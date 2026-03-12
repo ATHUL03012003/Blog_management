@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from .enum import UserRole
+from common.enum import UserRole
 from .managers import UserManager
 from django.core.exceptions import ValidationError
 
@@ -12,6 +12,8 @@ class User(AbstractUser):
     is_verified = models.BooleanField(default=False)
     email = models.EmailField(unique=True)
     objects = UserManager()
+    USERNAME_FIELD = 'username'           # ✅ Login with username
+    REQUIRED_FIELDS = ['email']
 
     def save(self, *args, **kwargs):
 
