@@ -58,3 +58,16 @@ class PostService:
         post.save()
 
         return post
+    # Author submits post for editor review
+    @staticmethod
+    def submit_for_review(post):
+        post.status = PostStatus.REVIEW
+        post.save()
+        return post
+
+    # Editor rejects a post
+    @staticmethod
+    def reject_post(post):
+        post.status = PostStatus.REJECTED
+        post.save()
+        return post
