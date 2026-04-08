@@ -29,6 +29,7 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/auth/', include('user.urls')),
     path("api/posts/", include("posts.urls")),
+    path('api/categories/', include('category.urls'))
 ]
-if settings.DEBUG:
+if settings.DEBUG: 
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
