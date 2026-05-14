@@ -87,7 +87,7 @@ export default function LaptopShowcase() {
                 animate="visible"
               >
                 {/* Mock app header */}
-                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+                <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                   <Typography sx={{ fontSize: 11, fontWeight: 700, color: '#a78bfa' }}>NEXUSBLog</Typography>
                   <Stack direction="row" spacing={0.5}>
                     {['Reader', 'Author', 'Editor'].map((role) => (
