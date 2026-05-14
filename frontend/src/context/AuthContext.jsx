@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { clearStoredSession, loadStoredUser } from '../utils/authStorage';
 
 const AuthContext = createContext();
 
@@ -21,36 +22,62 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if token exists on load
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    setUser(loadStoredUser());
     setLoading(false);
   }, []);
 
+  const persistSession = (data) => {
+    const { access, refresh, user: userData } = data;
+
+    if (!access || !refresh || !userData) {
+      throw new Error('Invalid session response from server');
+    }
+
+    localStorage.setItem('access', access);
+    localStorage.setItem('refresh', refresh);
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+
+    if (userData?.role !== undefined && ROLE_MAP[userData.role]) {
+      navigate(`/${ROLE_MAP[userData.role]}`);
+    } else {
+      navigate('/');
+    }
+  };
+
   const login = async (identifier, password) => {
     try {
-      // Using /api/auth/login/
       const res = await api.post('/api/auth/login/', { identifier, password });
-      
-      const { access, refresh, user: userData } = res.data; 
-      
-      localStorage.setItem('access', access);
-      localStorage.setItem('refresh', refresh);
-      localStorage.setItem('user', JSON.stringify(userData));
-      
-      setUser(userData);
-      
-      // Redirect based on role
-      if (userData?.role !== undefined && ROLE_MAP[userData.role]) {
-         navigate(`/${ROLE_MAP[userData.role]}`);
-      } else {
-         navigate('/');
-      }
+      persistSession(res.data);
       return { success: true };
     } catch (error) {
-      return { success: false, error: error.response?.data?.detail || 'Login failed' };
+      if (error.message === 'Invalid session response from server') {
+        clearStoredSession();
+        return { success: false, error: 'Login succeeded but session data was invalid' };
+      }
+      const data = error.response?.data;
+      return {
+        success: false,
+        error: data?.error || data?.detail || 'Login failed',
+      };
+    }
+  };
+
+  const loginWithGoogle = async (token, action = 'login') => {
+    try {
+      const res = await api.post('/api/auth/google/', { token, action });
+      persistSession(res.data);
+      return { success: true };
+    } catch (error) {
+      if (error.message === 'Invalid session response from server') {
+        clearStoredSession();
+        return { success: false, error: 'Google login succeeded but session data was invalid' };
+      }
+      const data = error.response?.data;
+      return {
+        success: false,
+        error: data?.error || data?.detail || 'Google login failed',
+      };
     }
   };
 
@@ -73,9 +100,7 @@ export const AuthProvider = ({ children }) => {
   };
   
   const logout = () => {
-    localStorage.removeItem('access');
-    localStorage.removeItem('refresh');
-    localStorage.removeItem('user');
+    clearStoredSession();
     setUser(null);
     navigate('/sign-in');
   };
@@ -84,8 +109,9 @@ export const AuthProvider = ({ children }) => {
     user,
     loading,
     login,
+    loginWithGoogle,
     register,
-    logout
+    logout,
   };
 
   return (

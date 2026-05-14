@@ -51,44 +51,55 @@ class UserService:
 class GoogleAuthService:
 
     @staticmethod
-    def authenticate_google_user(token):
+    def _verify_google_token(token):
         try:
-            idinfo = id_token.verify_oauth2_token(
+            return id_token.verify_oauth2_token(
                 token,
                 requests.Request(),
-                settings.GOOGLE_CLIENT_ID
+                settings.GOOGLE_CLIENT_ID,
             )
         except ValueError:
             return None
 
-        email = idinfo["email"]
+    @staticmethod
+    def _build_unique_username(email):
         base_username = email.split("@")[0]
         username = base_username
         counter = 1
         while User.objects.filter(username=username).exists():
             username = f"{base_username}{counter}"
             counter += 1
+        return username
+
+    @staticmethod
+    def _build_auth_response(user, created=False):
+        tokens = UserService.generate_tokens(user)
+        tokens["created"] = created
+        return tokens
+
+    @staticmethod
+    def authenticate_google_user(token, action="register"):
+        idinfo = GoogleAuthService._verify_google_token(token)
+        if not idinfo:
+            return None, "invalid_token"
+
+        email = idinfo["email"]
+
+        if action == "login":
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                return None, "not_registered"
+            return GoogleAuthService._build_auth_response(user), None
+
         user, created = User.objects.get_or_create(
             email=email,
             defaults={
-                "username": username,
+                "username": GoogleAuthService._build_unique_username(email),
                 "is_verified": True,
-                "role": UserRole.READER
-            }
+                "role": UserRole.READER,
+            },
         )
-
-        refresh = RefreshToken.for_user(user)
-
-        return {
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
-            "created": created,
-            "user": {
-                "id": user.id,
-                "username": user.username,
-                "email": user.email,
-                "role": user.role,
-            }
-        }
+        return GoogleAuthService._build_auth_response(user, created=created), None
 
 

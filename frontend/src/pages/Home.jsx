@@ -82,7 +82,7 @@ export default function Home() {
             { title: 'Blazing Fast', desc: 'Powered by React + Vite for sub-millisecond route transitions.' },
             { title: 'Premium Aesthetics', desc: 'Sleek dark mode built on top of Material UI and Framer Motion.' }
           ].map((feature, i) => (
-            <Grid item xs={12} md={4} key={i}>
+            <Grid size={{ xs: 12, md: 4 }} key={i}>
               <motion.div variants={itemVariants} whileHover={{ translateY: -8 }} transition={{ duration: 0.2 }}>
                 <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: 2, background: 'rgba(30, 41, 59, 0.5)', backdropFilter: 'blur(10px)' }}>
                   <CardContent>

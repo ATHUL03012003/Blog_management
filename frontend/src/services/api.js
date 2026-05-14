@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { clearStoredSession } from '../utils/authStorage';
 
 const api = axios.create({
   baseURL: 'http://localhost:8000',
@@ -7,12 +8,19 @@ const api = axios.create({
   },
 });
 
+const PUBLIC_AUTH_PATHS = ['/api/auth/login/', '/api/auth/register/', '/api/auth/google/'];
+
+const isPublicAuthRequest = (url = '') =>
+  PUBLIC_AUTH_PATHS.some((path) => url.includes(path));
+
 // Request Interceptor: Attach JWT Access Token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('access');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (!isPublicAuthRequest(config.url)) {
+      const token = localStorage.getItem('access');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
@@ -25,7 +33,12 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     // Prevent infinite loops if refresh fails
-    if (error.response?.status === 401 && !originalRequest._retry && originalRequest.url !== '/api/token/refresh/') {
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !isPublicAuthRequest(originalRequest.url) &&
+      originalRequest.url !== '/api/token/refresh/'
+    ) {
       originalRequest._retry = true;
       try {
         const refresh = localStorage.getItem('refresh');
@@ -36,10 +49,7 @@ api.interceptors.response.use(
           return api(originalRequest); // Retry the original request
         }
       } catch (err) {
-        // Refresh token failed, force logout
-        localStorage.removeItem('access');
-        localStorage.removeItem('refresh');
-        localStorage.removeItem('user');
+        clearStoredSession();
         window.location.href = '/sign-in';
       }
     }

@@ -3,6 +3,7 @@ import { Box, Card, CardContent, TextField, Button, Typography, Container, Divid
 import { motion } from 'framer-motion';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import GoogleLoginButton from '../../components/GoogleLoginButton';
 
 export default function Login() {
   const [formData, setFormData] = useState({ identifier: '', password: '' });
@@ -79,10 +80,7 @@ export default function Login() {
               <Typography variant="body2" color="text.secondary">OR</Typography>
             </Divider>
 
-            <Button fullWidth variant="outlined" sx={{ mb: 2, borderColor: 'rgba(255,255,255,0.2)', color: 'text.primary' }}>
-              <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style={{ width: 20, marginRight: 10 }} />
-              Continue with Google
-            </Button>
+            <GoogleLoginButton text="continue_with" mode="login" />
 
             <Box sx={{ textAlign: 'center', mt: 3 }}>
               <Typography variant="body2" color="text.secondary">
