@@ -26,6 +26,12 @@ class UserService:
         return {
             "refresh": str(refresh),
             "access": str(refresh.access_token),
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "role": user.role,
+            }
         }
 
     @staticmethod
@@ -76,7 +82,13 @@ class GoogleAuthService:
         return {
             "refresh": str(refresh),
             "access": str(refresh.access_token),
-            "created": created
+            "created": created,
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "role": user.role,
+            }
         }
 
 
