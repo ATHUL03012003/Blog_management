@@ -1,5 +1,3 @@
-import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
 import { Box, Container, Grid, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
 import LaptopShowcase from '../components/home/LaptopShowcase';
@@ -17,19 +15,6 @@ const heroTextVariants = {
 };
 
 export default function Home() {
-  const location = useLocation();
-
-  useEffect(() => {
-    const scrollTarget = location.state?.scrollTo || location.hash?.replace('#', '');
-    if (!scrollTarget) return;
-
-    const timer = setTimeout(() => {
-      document.getElementById(scrollTarget)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 120);
-
-    return () => clearTimeout(timer);
-  }, [location]);
-
   return (
     <Box sx={{ width: '100%', overflow: 'hidden' }}>
       {/* Hero */}
@@ -38,11 +23,12 @@ export default function Home() {
         component="section"
         sx={{
           position: 'relative',
-          pt: { xs: 4, md: 6 },
+          pt: { xs: 2, md: 4 },
           pb: { xs: 8, md: 10 },
-          minHeight: { md: '90vh' },
+          minHeight: { xs: 'calc(100vh - 120px)', md: 'calc(100vh - 80px)' },
           display: 'flex',
           alignItems: 'center',
+          scrollMarginTop: { xs: 120, md: 80 },
         }}
       >
         <Box

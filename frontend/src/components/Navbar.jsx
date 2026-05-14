@@ -45,10 +45,16 @@ export default function Navbar() {
   };
 
   const scrollToSection = (sectionId) => {
+    if (sectionId === 'home') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     if (location.pathname !== '/') {
       navigate('/', { state: { scrollTo: sectionId } });
       return;
     }
+
     document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
