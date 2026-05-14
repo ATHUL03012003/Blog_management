@@ -71,7 +71,7 @@ export default function Home() {
         />
 
         <Container maxWidth="lg" sx={{ position: 'relative' }}>
-          <Grid container spacing={{ xs: 4, md: 6 }} alignItems="center">
+          <Grid container spacing={{ xs: 4, md: 6 }} sx={{ alignItems: 'center' }}>
             <Grid size={{ xs: 12, md: 6 }}>
               <Typography
                 component={motion.p}

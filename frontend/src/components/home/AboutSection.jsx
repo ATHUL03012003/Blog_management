@@ -21,7 +21,7 @@ export default function AboutSection() {
       }}
     >
       <Container maxWidth="lg">
-        <Grid container spacing={{ xs: 4, md: 6 }} alignItems="center">
+        <Grid container spacing={{ xs: 4, md: 6 }} sx={{ alignItems: 'center' }}>
           <Grid size={{ xs: 12, md: 6 }}>
             <SectionHeading
               align="left"
@@ -30,14 +30,15 @@ export default function AboutSection() {
               subtitle="NEXUSBLog was built to bridge the gap between a simple blog and a professional publishing system. We believe great ideas deserve structured workflows, not scattered drafts."
             />
 
-            <Stack spacing={2.5} component={motion.div} initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.2 }}>
+            <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.2 }}>
+              <Stack spacing={2.5}>
               <Typography color="text.secondary" sx={{ lineHeight: 1.85, fontSize: '1.05rem' }}>
                 Our platform empowers authors to write freely while giving editors the tools to review, refine, and publish with confidence. Readers get a clean, fast experience — and administrators stay in control of users, categories, and content policies.
               </Typography>
               <Typography color="text.secondary" sx={{ lineHeight: 1.85, fontSize: '1.05rem' }}>
                 From Google sign-up to role-based dashboards, every layer is designed to feel cohesive: a dark, polished interface on the outside and a robust Django + React architecture underneath.
               </Typography>
-              <Stack direction="row" flexWrap="wrap" gap={1} sx={{ pt: 1 }}>
+              <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1, pt: 1 }}>
                 {highlights.map((item) => (
                   <Chip
                     key={item}
@@ -51,7 +52,8 @@ export default function AboutSection() {
                   />
                 ))}
               </Stack>
-            </Stack>
+              </Stack>
+            </motion.div>
           </Grid>
 
           <Grid size={{ xs: 12, md: 6 }}>
