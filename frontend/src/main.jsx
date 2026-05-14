@@ -8,6 +8,10 @@ import theme from './theme/theme.js';
 import './index.css';
 import { AuthProvider } from './context/AuthContext.jsx';
 
+if ('scrollRestoration' in history) {
+  history.scrollRestoration = 'manual';
+}
+
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
 const app = (

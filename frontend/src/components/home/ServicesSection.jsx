@@ -64,6 +64,7 @@ export default function ServicesSection() {
       sx={{
         py: { xs: 10, md: 14 },
         position: 'relative',
+        scrollMarginTop: { xs: 120, md: 88 },
         '&::before': {
           content: '""',
           position: 'absolute',

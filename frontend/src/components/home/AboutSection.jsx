@@ -18,6 +18,7 @@ export default function AboutSection() {
         py: { xs: 10, md: 14 },
         borderTop: '1px solid rgba(51, 65, 85, 0.6)',
         background: 'linear-gradient(180deg, rgba(15,23,42,0) 0%, rgba(30,41,59,0.35) 100%)',
+        scrollMarginTop: { xs: 120, md: 88 },
       }}
     >
       <Container maxWidth="lg">
