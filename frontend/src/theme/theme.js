@@ -4,18 +4,22 @@ const theme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#7C3AED', // Vibrant Purple
-      light: '#A78BFA',
-      dark: '#5B21B6',
+      main: '#1E6FD9',
+      light: '#38BDF8',
+      dark: '#0C4A9E',
     },
     secondary: {
-      main: '#10B981', // Emerald Green
-      light: '#34D399',
-      dark: '#059669',
+      main: '#0EA5E9',
+      light: '#7DD3FC',
+      dark: '#0369A1',
     },
     background: {
-      default: '#0F172A', // Slate 900
-      paper: '#1E293B',   // Slate 800
+      default: '#001529',
+      paper: '#0A2342',
+    },
+    text: {
+      primary: '#F0F9FF',
+      secondary: '#94A3B8',
     },
     error: {
       main: '#EF4444',
@@ -24,10 +28,10 @@ const theme = createTheme({
       main: '#F59E0B',
     },
     info: {
-      main: '#3B82F6',
+      main: '#38BDF8',
     },
     success: {
-      main: '#10B981',
+      main: '#22C55E',
     },
   },
   typography: {
@@ -77,7 +81,7 @@ const theme = createTheme({
         root: {
           backgroundImage: 'none',
           boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
-          border: '1px solid #334155', // Slate 700
+          border: '1px solid rgba(56, 189, 248, 0.12)',
           transition: 'transform 0.2s, box-shadow 0.2s',
           '&:hover': {
             transform: 'translateY(-4px)',
@@ -90,9 +94,9 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           backgroundImage: 'none',
-          backgroundColor: 'rgba(15, 23, 42, 0.8)',
+          backgroundColor: 'rgba(0, 21, 41, 0.85)',
           backdropFilter: 'blur(12px)',
-          borderBottom: '1px solid #334155',
+          borderBottom: '1px solid rgba(56, 189, 248, 0.12)',
           boxShadow: 'none',
         },
       },
@@ -102,6 +106,16 @@ const theme = createTheme({
         root: {
           '& .MuiOutlinedInput-root': {
             borderRadius: 12,
+            backgroundColor: 'rgba(0, 21, 41, 0.35)',
+            '& fieldset': {
+              borderColor: 'rgba(56, 189, 248, 0.2)',
+            },
+            '&:hover fieldset': {
+              borderColor: 'rgba(56, 189, 248, 0.4)',
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: '#38BDF8',
+            },
           },
         },
       },

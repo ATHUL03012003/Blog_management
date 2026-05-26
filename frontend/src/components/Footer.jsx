@@ -1,4 +1,5 @@
 import { Box, Container, Typography, Divider } from '@mui/material';
+import { BRAND_NAME, LOGO_SRC } from '../constants/brand';
 
 export default function Footer() {
   return (
@@ -6,30 +7,22 @@ export default function Footer() {
       component="footer"
       sx={{
         py: 4,
-        borderTop: '1px solid rgba(51, 65, 85, 0.6)',
-        background: 'rgba(15, 23, 42, 0.9)',
+        borderTop: '1px solid rgba(56, 189, 248, 0.12)',
+        background: 'rgba(0, 21, 41, 0.95)',
       }}
     >
       <Container maxWidth="lg">
         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
-          <Typography
-            variant="h6"
-            sx={{
-              fontWeight: 800,
-              background: 'linear-gradient(90deg, #A78BFA 0%, #34D399 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            NEXUSBLog
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Role-based blogging · Editorial workflows · Built with React & Django
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box component="img" src={LOGO_SRC} alt={BRAND_NAME} sx={{ height: 40 }} />
+          </Box>
+          <Typography variant="body2" color="text.secondary" sx={{ textAlign: { xs: 'center', sm: 'right' } }}>
+            Professional blog writing · Editorial workflows · React & Django
           </Typography>
         </Box>
-        <Divider sx={{ my: 2.5, borderColor: 'rgba(51,65,85,0.6)' }} />
+        <Divider sx={{ my: 2.5, borderColor: 'rgba(56, 189, 248, 0.12)' }} />
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'center' }}>
-          © {new Date().getFullYear()} NEXUSBLog. All rights reserved.
+          © {new Date().getFullYear()} {BRAND_NAME}. All rights reserved.
         </Typography>
       </Container>
     </Box>

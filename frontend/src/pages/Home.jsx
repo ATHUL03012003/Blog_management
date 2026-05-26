@@ -36,8 +36,8 @@ export default function Home() {
             position: 'absolute',
             inset: 0,
             backgroundImage: `
-              linear-gradient(rgba(124,58,237,0.04) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(124,58,237,0.04) 1px, transparent 1px)
+              linear-gradient(rgba(56,189,248,0.05) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(56,189,248,0.05) 1px, transparent 1px)
             `,
             backgroundSize: '48px 48px',
             maskImage: 'radial-gradient(ellipse at 50% 40%, black 20%, transparent 75%)',
@@ -51,7 +51,7 @@ export default function Home() {
             right: '-5%',
             width: '50vw',
             height: '50vw',
-            background: 'radial-gradient(circle, rgba(16,185,129,0.08) 0%, transparent 65%)',
+            background: 'radial-gradient(circle, rgba(30,111,217,0.12) 0%, transparent 65%)',
             pointerEvents: 'none',
           }}
         />
@@ -68,7 +68,7 @@ export default function Home() {
                 variant="overline"
                 sx={{ color: 'secondary.light', fontWeight: 700, letterSpacing: '0.22em', mb: 2 }}
               >
-                NEXT-GEN BLOGGING PLATFORM
+                PROFESSIONAL BLOG WRITING PLATFORM
               </Typography>
 
               <Typography
@@ -83,7 +83,7 @@ export default function Home() {
                   fontWeight: 800,
                   lineHeight: 1.15,
                   mb: 3,
-                  background: 'linear-gradient(135deg, #ffffff 0%, #a8b2d1 55%, #34d399 100%)',
+                  background: 'linear-gradient(135deg, #ffffff 0%, #94a3b8 50%, #38bdf8 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                 }}

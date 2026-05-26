@@ -17,7 +17,7 @@ export default function AboutSection() {
       sx={{
         py: { xs: 10, md: 14 },
         borderTop: '1px solid rgba(51, 65, 85, 0.6)',
-        background: 'linear-gradient(180deg, rgba(15,23,42,0) 0%, rgba(30,41,59,0.35) 100%)',
+        background: 'linear-gradient(180deg, rgba(0,21,41,0) 0%, rgba(10,35,66,0.45) 100%)',
         scrollMarginTop: { xs: 120, md: 88 },
       }}
     >
@@ -28,7 +28,7 @@ export default function AboutSection() {
               align="left"
               eyebrow="ABOUT US"
               title="Crafted for creators who care about quality"
-              subtitle="NEXUSBLog was built to bridge the gap between a simple blog and a professional publishing system. We believe great ideas deserve structured workflows, not scattered drafts."
+              subtitle="Blog Gen was built to bridge the gap between a simple blog and a professional publishing system. We believe great ideas deserve structured workflows, not scattered drafts."
             />
 
             <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.2 }}>
@@ -45,9 +45,9 @@ export default function AboutSection() {
                     key={item}
                     label={item}
                     sx={{
-                      bgcolor: 'rgba(124,58,237,0.12)',
-                      color: '#c4b5fd',
-                      border: '1px solid rgba(124,58,237,0.25)',
+                      bgcolor: 'rgba(30,111,217,0.15)',
+                      color: '#7dd3fc',
+                      border: '1px solid rgba(56,189,248,0.25)',
                       fontWeight: 600,
                     }}
                   />

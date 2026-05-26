@@ -37,7 +37,7 @@ export default function LaptopShowcase() {
           sx={{
             position: 'absolute',
             inset: '10% 5% 25%',
-            background: 'radial-gradient(circle, rgba(124,58,237,0.35) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(30,111,217,0.4) 0%, transparent 70%)',
             filter: 'blur(28px)',
             zIndex: 0,
           }}
@@ -88,7 +88,7 @@ export default function LaptopShowcase() {
               >
                 {/* Mock app header */}
                 <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                  <Typography sx={{ fontSize: 11, fontWeight: 700, color: '#a78bfa' }}>NEXUSBLog</Typography>
+                  <Typography sx={{ fontSize: 11, fontWeight: 700, color: '#38bdf8' }}>Blog Gen</Typography>
                   <Stack direction="row" spacing={0.5}>
                     {['Reader', 'Author', 'Editor'].map((role) => (
                       <Chip
@@ -98,9 +98,9 @@ export default function LaptopShowcase() {
                         sx={{
                           height: 20,
                           fontSize: 9,
-                          bgcolor: 'rgba(124,58,237,0.15)',
-                          color: '#c4b5fd',
-                          border: '1px solid rgba(124,58,237,0.25)',
+                          bgcolor: 'rgba(30,111,217,0.2)',
+                          color: '#7dd3fc',
+                          border: '1px solid rgba(56,189,248,0.3)',
                         }}
                       />
                     ))}
@@ -202,7 +202,7 @@ function GridMock() {
           mt: 0.5,
           p: 1,
           borderRadius: 1.5,
-          border: '1px dashed rgba(124,58,237,0.4)',
+          border: '1px dashed rgba(56,189,248,0.4)',
           textAlign: 'center',
         }}
       >
