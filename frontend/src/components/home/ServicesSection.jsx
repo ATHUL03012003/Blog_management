@@ -13,7 +13,7 @@ const services = [
     icon: GroupsOutlinedIcon,
     title: 'Role-Based Workspaces',
     desc: 'Dedicated dashboards for Readers, Authors, Editors, Admins, and Super Admins with permissions tuned to each role.',
-    accent: '#7C3AED',
+    accent: '#1E6FD9',
   },
   {
     icon: FactCheckOutlinedIcon,
@@ -69,7 +69,7 @@ export default function ServicesSection() {
           content: '""',
           position: 'absolute',
           inset: 0,
-          background: 'radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.08) 0%, transparent 55%)',
+          background: 'radial-gradient(ellipse at 50% 0%, rgba(30,111,217,0.1) 0%, transparent 55%)',
           pointerEvents: 'none',
         },
       }}
@@ -78,7 +78,7 @@ export default function ServicesSection() {
         <SectionHeading
           eyebrow="WHAT WE OFFER"
           title="Services built for modern publishing"
-          subtitle="NEXUSBLog is more than a blog — it is a complete content platform with workflows, access control, and tools for every stakeholder in your editorial team."
+          subtitle="Blog Gen is more than a blog — it is a complete content platform with workflows, access control, and tools for every stakeholder in your editorial team."
         />
 
         <Grid container spacing={3}>

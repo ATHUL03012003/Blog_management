@@ -16,7 +16,7 @@ function App() {
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100vw', overflowX: 'hidden' }}>
       <ScrollToTop />
       <Navbar />
-      <Box component="main" sx={{ flexGrow: 1, pt: { xs: 10, sm: 9, md: 9 } }}>
+      <Box component="main" sx={{ flexGrow: 1, pt: { xs: 8, sm: 9, md: 9 } }}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/sign-in" element={<Login />} />

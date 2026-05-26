@@ -30,7 +30,7 @@ export default function SectionHeading({ eyebrow, title, subtitle, align = 'cent
         sx={{
           fontSize: { xs: '2rem', md: '2.75rem' },
           fontWeight: 800,
-          background: 'linear-gradient(90deg, #f8fafc, #94a3b8)',
+          background: 'linear-gradient(90deg, #f0f9ff, #38bdf8)',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           mb: 2,

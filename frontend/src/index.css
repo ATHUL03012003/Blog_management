@@ -5,8 +5,8 @@ html {
 body {
   margin: 0;
   padding: 0;
-  background-color: #0F172A; /* Slate 900 to match theme */
-  color: #F8FAFC;
+  background-color: #001529;
+  color: #f0f9ff;
 }
 
 ::-webkit-scrollbar {
@@ -14,14 +14,14 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #0F172A;
+  background: #001529;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #0c4a6e;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #1e6fd9;
 }
