@@ -9,6 +9,8 @@ import AuthorDashboard from './pages/author/Dashboard';
 import EditorDashboard from './pages/editor/Dashboard';
 import AdminDashboard from './pages/admin/Dashboard';
 import SuperAdminDashboard from './pages/superadmin/Dashboard';
+import Profile from './pages/Profile';
+import ProtectedRoute from './components/ProtectedRoute';
 import { Box } from '@mui/material';
 
 function App() {
@@ -21,7 +23,15 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/sign-in" element={<Login />} />
           <Route path="/sign-up" element={<Register />} />
-          
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+
           {/* Role-based Dashboards */}
           <Route path="/reader/*" element={<ReaderDashboard />} />
           <Route path="/author/*" element={<AuthorDashboard />} />

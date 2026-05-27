@@ -2,19 +2,17 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { clearStoredSession, loadStoredUser } from '../utils/authStorage';
+import { ROLE_MAP } from '../constants/roles';
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
-export const ROLE_MAP = {
-  0: 'admin',
-  1: 'reader',
-  2: 'author',
-  3: 'editor',
-  4: 'moderator',
-  5: 'superadmin'
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return context;
 };
-
-export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -105,6 +103,12 @@ export const AuthProvider = ({ children }) => {
     navigate('/sign-in');
   };
 
+  const updateSessionUser = (userData) => {
+    if (!userData) return;
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+  };
+
   const value = {
     user,
     loading,
@@ -112,6 +116,7 @@ export const AuthProvider = ({ children }) => {
     loginWithGoogle,
     register,
     logout,
+    updateSessionUser,
   };
 
   return (
