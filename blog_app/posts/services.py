@@ -2,7 +2,7 @@ from django.utils import timezone
 from django.shortcuts import get_object_or_404
 
 from .models import Post
-from common.enum import PostStatus
+from common.enum import PostStatus, UserRole
 from django.utils.text import slugify
 import uuid
 
@@ -37,6 +37,16 @@ class PostService:
     @staticmethod
     def get_post_by_slug(slug):
         return get_object_or_404(Post, slug=slug)
+
+    @staticmethod
+    def user_can_view_post(user, post):
+        if post.status == PostStatus.PUBLISHED:
+            return True
+        if not user or not getattr(user, "is_authenticated", False):
+            return False
+        if post.author_id == user.id:
+            return True
+        return user.role in (UserRole.EDITOR, UserRole.ADMIN, UserRole.SUPERADMIN)
 
     @staticmethod
     def update_post(post, data):

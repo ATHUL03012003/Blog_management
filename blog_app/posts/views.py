@@ -57,6 +57,8 @@ class PostListView(APIView):
 class PostDetailView(APIView):
     def get(self, request, slug):
         post = PostService.get_post_by_slug(slug)
+        if not PostService.user_can_view_post(request.user, post):
+            return Response({"error": "Post not found."}, status=404)
         serializer = PostSerializer(post)
         return Response(serializer.data)
 

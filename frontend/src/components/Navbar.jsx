@@ -139,7 +139,7 @@ export default function Navbar() {
                 >
                   <ListItemText
                     primary={item.label}
-                    primaryTypographyProps={{ fontWeight: 600, color: '#e0f2fe' }}
+                    slotProps={{ primary: { sx: { fontWeight: 600, color: '#e0f2fe' } } }}
                   />
                 </ListItemButton>
               </ListItem>
@@ -149,7 +149,7 @@ export default function Navbar() {
                 <ListItemButton onClick={() => scrollToSection(item.id)} sx={{ py: 1.5 }}>
                   <ListItemText
                     primary={item.label}
-                    primaryTypographyProps={{ fontWeight: 600, color: '#e0f2fe' }}
+                    slotProps={{ primary: { sx: { fontWeight: 600, color: '#e0f2fe' } } }}
                   />
                 </ListItemButton>
               </ListItem>

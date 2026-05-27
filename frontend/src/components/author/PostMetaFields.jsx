@@ -2,8 +2,15 @@ import { useEffect, useState } from 'react';
 import { TextField, FormControl, InputLabel, Select, MenuItem, Box } from '@mui/material';
 import { fetchCategories } from '../../services/categories';
 
+function resolveCategorySelectValue(categoryId, categories) {
+  if (categoryId == null || categoryId === '') return '';
+  if (!categories.length) return '';
+  return categories.some((cat) => cat.id === categoryId) ? categoryId : '';
+}
+
 export default function PostMetaFields({ values, onChange, disabled = false }) {
   const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -13,10 +20,14 @@ export default function PostMetaFields({ values, onChange, disabled = false }) {
         if (!cancelled) setCategories(data);
       } catch {
         /* optional */
+      } finally {
+        if (!cancelled) setCategoriesLoading(false);
       }
     })();
     return () => { cancelled = true; };
   }, []);
+
+  const categorySelectValue = resolveCategorySelectValue(values.category, categories);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -41,11 +52,11 @@ export default function PostMetaFields({ values, onChange, disabled = false }) {
         minRows={2}
         placeholder="Short summary for listings and social previews"
       />
-      <FormControl fullWidth disabled={disabled}>
+      <FormControl fullWidth disabled={disabled || categoriesLoading}>
         <InputLabel id="post-category-label">Category</InputLabel>
         <Select
           labelId="post-category-label"
-          value={values.category ?? ''}
+          value={categorySelectValue}
           label="Category"
           onChange={(e) =>
             onChange({
