@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import { Box, Alert } from '@mui/material';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 
 const MIN_WIDTH = 200;
 const MAX_WIDTH = 400;

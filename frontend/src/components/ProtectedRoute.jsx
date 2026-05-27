@@ -1,6 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { Box, CircularProgress } from '@mui/material';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { ROLE_MAP } from '../constants/roles';
 
 export default function ProtectedRoute({ children, allowedRoles }) {

@@ -1,20 +1,11 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { clearStoredSession, loadStoredUser } from '../utils/authStorage';
 import { ROLE_MAP } from '../constants/roles';
+import { AuthContext } from './authContext';
 
-const AuthContext = createContext(null);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
-  return context;
-};
-
-export const AuthProvider = ({ children }) => {
+export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -82,21 +73,19 @@ export const AuthProvider = ({ children }) => {
   const register = async (userDataConfig) => {
     try {
       await api.post('/api/auth/register/', userDataConfig);
-      // Auto-login after register, or just return success so the component can redirect to login.
       return { success: true };
     } catch (error) {
-       // Detailed validation error handling
-       let errorMsg = 'Registration failed';
-       if(error.response?.data) {
-           const keys = Object.keys(error.response.data);
-           if(keys.length > 0) {
-               errorMsg = `${keys[0]}: ${error.response.data[keys[0]]}`;
-           }
-       }
-       return { success: false, error: errorMsg };
+      let errorMsg = 'Registration failed';
+      if (error.response?.data) {
+        const keys = Object.keys(error.response.data);
+        if (keys.length > 0) {
+          errorMsg = `${keys[0]}: ${error.response.data[keys[0]]}`;
+        }
+      }
+      return { success: false, error: errorMsg };
     }
   };
-  
+
   const logout = () => {
     clearStoredSession();
     setUser(null);
@@ -119,9 +108,5 @@ export const AuthProvider = ({ children }) => {
     updateSessionUser,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {!loading && children}
-    </AuthContext.Provider>
-  );
-};
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}

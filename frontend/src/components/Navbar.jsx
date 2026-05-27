@@ -19,7 +19,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { ROLE_MAP } from '../constants/roles';
 import { useState } from 'react';
 import { BRAND_NAME, LOGO_SRC, authButtonSx } from '../constants/brand';
@@ -50,7 +50,7 @@ function isNavActive(pathname, item) {
 }
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [anchorEl, setAnchorEl] = useState(null);
@@ -240,7 +240,7 @@ export default function Navbar() {
             </Box>
 
             <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
-              {user ? (
+              {!loading && user ? (
                 <>
                   {isRoleDashboard && (
                     <IconButton

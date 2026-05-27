@@ -9,7 +9,7 @@ import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import ExploreIcon from '@mui/icons-material/Explore';
 import PersonIcon from '@mui/icons-material/Person';
 import { Link as RouterLink } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import StatCard from '../../components/reader/StatCard';
 import ActionCard from '../../components/reader/ActionCard';
 import { readerGlassSx } from '../../components/reader/ReaderLayout';

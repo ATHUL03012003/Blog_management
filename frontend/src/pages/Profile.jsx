@@ -19,7 +19,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { readerGlassSx } from '../components/reader/ReaderLayout';
 import { glassCardSx } from '../components/AuthPageLayout';
 import { fetchProfile, updateProfile, changePassword } from '../services/user';
