@@ -1,12 +1,29 @@
-import { Typography, Container, Box } from '@mui/material';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import ProtectedRoute from '../../components/ProtectedRoute';
+import ReaderLayout from '../../components/reader/ReaderLayout';
+import HomeOverview from './HomeOverview';
+import MyPosts from './MyPosts';
+import CreatePost from './CreatePost';
+import EditPost from './EditPost';
+import PostDetail from './PostDetail';
+import Profile from '../Profile';
+
+const AUTHOR_ROLE = 2;
 
 export default function AuthorDashboard() {
   return (
-    <Container maxWidth="xl" sx={{ mt: 4 }}>
-      <Box sx={{ p: 4, background: 'rgba(30, 41, 59, 0.5)', borderRadius: 3 }}>
-        <Typography variant="h4" gutterBottom>Author Dashboard</Typography>
-        <Typography color="text.secondary">Draft new posts, manage your published articles, and view analytics for your content.</Typography>
-      </Box>
-    </Container>
+    <ProtectedRoute allowedRoles={[AUTHOR_ROLE]}>
+      <Routes>
+        <Route element={<ReaderLayout />}>
+          <Route index element={<HomeOverview />} />
+          <Route path="posts" element={<MyPosts />} />
+          <Route path="posts/new" element={<CreatePost />} />
+          <Route path="posts/:slug" element={<PostDetail />} />
+          <Route path="posts/:slug/edit" element={<EditPost />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="*" element={<Navigate to="/author" replace />} />
+        </Route>
+      </Routes>
+    </ProtectedRoute>
   );
 }

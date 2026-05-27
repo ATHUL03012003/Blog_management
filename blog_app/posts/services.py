@@ -14,8 +14,9 @@ class PostService:
             title=data["title"],
             slug=slug,
             content=data["content"],
+            excerpt=data.get("excerpt", ""),
             author=user,
-            status=PostStatus.DRAFT
+            status=PostStatus.DRAFT,
         )
         return post
 
@@ -38,7 +39,9 @@ class PostService:
             post.slug = new_slug
         post.title = data.get("title", post.title)
         post.content = data.get("content", post.content)
-        post.image = data.get("image", post.image)
+        post.excerpt = data.get("excerpt", post.excerpt)
+        if "image" in data:
+            post.image = data.get("image", post.image)
         post.save()
 
         return post

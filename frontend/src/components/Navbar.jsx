@@ -31,11 +31,23 @@ const NAV_ITEMS = [
 ];
 
 const READER_NAV_ITEMS = [
-  { label: 'Overview', path: '/reader' },
+  { label: 'Overview', path: '/reader', exact: true },
   { label: 'Read blogs', path: '/reader/read' },
   { label: 'Categories', path: '/reader/categories' },
   { label: 'Profile', path: '/reader/profile' },
 ];
+
+const AUTHOR_NAV_ITEMS = [
+  { label: 'Overview', path: '/author', exact: true },
+  { label: 'My posts', path: '/author/posts' },
+  { label: 'New post', path: '/author/posts/new' },
+  { label: 'Profile', path: '/author/profile' },
+];
+
+function isNavActive(pathname, item) {
+  if (item.exact) return pathname === item.path;
+  return pathname === item.path || pathname.startsWith(`${item.path}/`);
+}
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -45,6 +57,10 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isReaderArea = location.pathname.startsWith('/reader');
+  const isAuthorArea = location.pathname.startsWith('/author');
+  const isRoleDashboard = isReaderArea || isAuthorArea;
+  const dashboardNav = isReaderArea ? READER_NAV_ITEMS : isAuthorArea ? AUTHOR_NAV_ITEMS : null;
+  const dashboardHome = isReaderArea ? '/reader' : isAuthorArea ? '/author' : '/';
 
   const handleMenu = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
@@ -68,11 +84,10 @@ export default function Navbar() {
   const handleProfile = () => {
     handleClose();
     setMobileOpen(false);
-    if (user?.role !== undefined && ROLE_MAP[user.role] === 'reader') {
-      navigate('/reader/profile');
-    } else {
-      navigate('/profile');
-    }
+    const rolePath = user?.role !== undefined ? ROLE_MAP[user.role] : null;
+    if (rolePath === 'reader') navigate('/reader/profile');
+    else if (rolePath === 'author') navigate('/author/profile');
+    else navigate('/profile');
   };
 
   const scrollToSection = (sectionId) => {
@@ -112,14 +127,14 @@ export default function Navbar() {
       </Box>
       <Divider sx={{ borderColor: 'rgba(56, 189, 248, 0.12)' }} />
       <List sx={{ flex: 1, py: 1 }}>
-        {isReaderArea
-          ? READER_NAV_ITEMS.map((item) => (
+        {dashboardNav
+          ? dashboardNav.map((item) => (
               <ListItem key={item.path} disablePadding>
                 <ListItemButton
                   component={RouterLink}
                   to={item.path}
                   onClick={() => setMobileOpen(false)}
-                  selected={location.pathname === item.path || (item.path !== '/reader' && location.pathname.startsWith(item.path))}
+                  selected={isNavActive(location.pathname, item)}
                   sx={{ py: 1.5 }}
                 >
                   <ListItemText
@@ -167,8 +182,8 @@ export default function Navbar() {
           <Toolbar disableGutters sx={{ justifyContent: 'space-between', minHeight: { xs: 64, sm: 72 } }}>
             <Box
               component={RouterLink}
-              to={isReaderArea ? '/reader' : '/'}
-              onClick={() => !isReaderArea && scrollToSection('home')}
+              to={dashboardHome}
+              onClick={() => !isRoleDashboard && scrollToSection('home')}
               sx={{
                 display: 'flex',
                 alignItems: 'center',
@@ -186,11 +201,9 @@ export default function Navbar() {
             </Box>
 
             <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 0.5, alignItems: 'center', flex: 1, justifyContent: 'center' }}>
-              {isReaderArea
-                ? READER_NAV_ITEMS.map((item) => {
-                    const active =
-                      location.pathname === item.path ||
-                      (item.path !== '/reader' && location.pathname.startsWith(item.path));
+              {dashboardNav
+                ? dashboardNav.map((item) => {
+                    const active = isNavActive(location.pathname, item);
                     return (
                       <Button
                         key={item.path}
@@ -229,11 +242,11 @@ export default function Navbar() {
             <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
               {user ? (
                 <>
-                  {isReaderArea && (
+                  {isRoleDashboard && (
                     <IconButton
                       sx={{ display: { xs: 'flex', md: 'none' }, color: '#7dd3fc' }}
                       onClick={() => setMobileOpen(true)}
-                      aria-label="Open reader menu"
+                      aria-label="Open menu"
                     >
                       <MenuIcon />
                     </IconButton>
