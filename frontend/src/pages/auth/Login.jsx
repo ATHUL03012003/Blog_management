@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Box, Card, CardContent, TextField, Button, Typography, Divider, Alert } from '@mui/material';
 import { motion } from 'framer-motion';
 import { Link as RouterLink } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import GoogleLoginButton from '../../components/GoogleLoginButton';
 import AuthPageLayout, { glassCardSx } from '../../components/AuthPageLayout';
 import { BRAND_NAME, LOGO_SRC, authButtonSx, authLinkSx } from '../../constants/brand';

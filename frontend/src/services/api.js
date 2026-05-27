@@ -16,6 +16,9 @@ const isPublicAuthRequest = (url = '') =>
 // Request Interceptor: Attach JWT Access Token
 api.interceptors.request.use(
   (config) => {
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
     if (!isPublicAuthRequest(config.url)) {
       const token = localStorage.getItem('access');
       if (token) {

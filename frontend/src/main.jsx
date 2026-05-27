@@ -6,7 +6,7 @@ import { ThemeProvider, CssBaseline } from '@mui/material';
 import App from './App.jsx';
 import theme from './theme/theme.js';
 import './index.css';
-import { AuthProvider } from './context/AuthContext.jsx';
+import AuthProvider from './context/AuthProvider.jsx';
 
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';

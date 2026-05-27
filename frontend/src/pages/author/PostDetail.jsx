@@ -12,8 +12,10 @@ import EditIcon from '@mui/icons-material/Edit';
 import { motion } from 'framer-motion';
 import { useNavigate, useParams, Link as RouterLink } from 'react-router-dom';
 import { fetchAuthorPost } from '../../services/authorPosts';
+import { mediaUrl } from '../../services/posts';
 import { readerGlassSx } from '../../components/reader/ReaderLayout';
 import PostStatusChip from '../../components/author/PostStatusChip';
+import BlogArticleRenderer from '../../components/author/BlogArticleRenderer';
 import { canEditPost, POST_STATUS } from '../../constants/postStatus';
 
 export default function PostDetail() {
@@ -46,6 +48,8 @@ export default function PostDetail() {
     return <Alert severity="error">{error}</Alert>;
   }
 
+  const canEdit = canEditPost(post.status) || post.status === POST_STATUS.PUBLISHED;
+
   return (
     <Box component={motion.article} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2, mb: 3 }}>
@@ -60,27 +64,43 @@ export default function PostDetail() {
           to={`/author/posts/${slug}/edit`}
           variant="contained"
           startIcon={<EditIcon />}
-          disabled={!canEditPost(post.status) && post.status !== POST_STATUS.PUBLISHED}
+          disabled={!canEdit}
         >
-          {canEditPost(post.status) || post.status === POST_STATUS.PUBLISHED ? 'Edit' : 'In review'}
+          {canEdit ? 'Edit' : 'In review'}
         </Button>
       </Box>
 
       <Box sx={{ ...readerGlassSx, p: { xs: 2.5, md: 4 } }}>
+        {post.image && (
+          <Box
+            component={motion.img}
+            src={mediaUrl(post.image)}
+            alt={post.title}
+            initial={{ opacity: 0, scale: 1.02 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            sx={{
+              width: '100%',
+              maxHeight: 400,
+              objectFit: 'cover',
+              borderRadius: 2,
+              mb: 3,
+            }}
+          />
+        )}
+
         <Typography variant="h4" fontWeight={800} gutterBottom sx={{ color: '#f0f9ff' }}>
           {post.title}
         </Typography>
+
         {post.excerpt && (
           <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 3, fontStyle: 'italic' }}>
             {post.excerpt}
           </Typography>
         )}
-        <Typography
-          variant="body1"
-          sx={{ color: 'text.secondary', lineHeight: 1.85, whiteSpace: 'pre-wrap' }}
-        >
-          {post.content}
-        </Typography>
+
+        <BlogArticleRenderer html={post.content} />
+
         <Box sx={{ mt: 4, pt: 2, borderTop: '1px solid rgba(56,189,248,0.12)' }}>
           <Typography variant="caption" color="text.secondary" display="block">
             Created {new Date(post.created_at).toLocaleString()}

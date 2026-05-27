@@ -6,11 +6,12 @@ from .views import (
     UpdatePostView,
     DeletePostView,
     PublishPostView,
-    SubmitForReviewView,   
-    ApprovePostView,       
-    RejectPostView,       
-    ReviewQueueView,      
-    MyPostsView,     
+    SubmitForReviewView,
+    ApprovePostView,
+    RejectPostView,
+    ReviewQueueView,
+    MyPostsView,
+    UploadPostImageView,
 )
 
 urlpatterns = [
@@ -20,6 +21,8 @@ urlpatterns = [
     path("create/", CreatePostView.as_view(), name="create-post"),
 
     path("my-posts/", MyPostsView.as_view(), name="my-posts"),
+
+    path("upload-image/", UploadPostImageView.as_view(), name="upload-post-image"),
 
     path("review-queue/", ReviewQueueView.as_view(), name="review-queue"),
 

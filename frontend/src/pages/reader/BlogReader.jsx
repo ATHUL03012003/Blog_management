@@ -25,6 +25,8 @@ import {
   addToReadingHistory,
 } from '../../utils/readerStorage';
 import { translateText } from '../../utils/translateContent';
+import { isHtmlContent } from '../../utils/sanitizeHtml';
+import BlogArticleRenderer from '../../components/author/BlogArticleRenderer';
 
 export default function BlogReader() {
   const { slug } = useParams();
@@ -66,6 +68,16 @@ export default function BlogReader() {
     const originalContent = sourcePost.content;
 
     if (lang === 'en') {
+      setDisplayTitle(originalTitle);
+      setDisplayContent(originalContent);
+      setTranslating(false);
+      return;
+    }
+
+    if (isHtmlContent(originalContent)) {
+      setTranslateError(
+        'Translation is not available for formatted articles. Showing the original version.',
+      );
       setDisplayTitle(originalTitle);
       setDisplayContent(originalContent);
       setTranslating(false);
@@ -197,18 +209,22 @@ export default function BlogReader() {
               {displayTitle || post.title}
             </Typography>
 
-            <Typography
-              component={motion.div}
-              variant="body1"
-              sx={{
-                color: 'text.secondary',
-                lineHeight: 1.85,
-                whiteSpace: 'pre-wrap',
-                '& p': { mb: 2 },
-              }}
-            >
-              {displayContent || post.content}
-            </Typography>
+            {isHtmlContent(displayContent || post.content) ? (
+              <BlogArticleRenderer html={displayContent || post.content} />
+            ) : (
+              <Typography
+                component={motion.div}
+                variant="body1"
+                sx={{
+                  color: 'text.secondary',
+                  lineHeight: 1.85,
+                  whiteSpace: 'pre-wrap',
+                  '& p': { mb: 2 },
+                }}
+              >
+                {displayContent || post.content}
+              </Typography>
+            )}
           </Box>
         </AnimatePresence>
       )}
