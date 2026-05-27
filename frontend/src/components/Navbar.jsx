@@ -19,7 +19,8 @@ import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useAuth, ROLE_MAP } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
+import { ROLE_MAP } from '../constants/roles';
 import { useState } from 'react';
 import { BRAND_NAME, LOGO_SRC, authButtonSx } from '../constants/brand';
 
@@ -29,12 +30,21 @@ const NAV_ITEMS = [
   { label: 'About', id: 'about' },
 ];
 
+const READER_NAV_ITEMS = [
+  { label: 'Overview', path: '/reader' },
+  { label: 'Read blogs', path: '/reader/read' },
+  { label: 'Categories', path: '/reader/categories' },
+  { label: 'Profile', path: '/reader/profile' },
+];
+
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [anchorEl, setAnchorEl] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const isReaderArea = location.pathname.startsWith('/reader');
 
   const handleMenu = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
@@ -52,6 +62,16 @@ export default function Navbar() {
       navigate(`/${ROLE_MAP[user.role]}`);
     } else {
       navigate('/');
+    }
+  };
+
+  const handleProfile = () => {
+    handleClose();
+    setMobileOpen(false);
+    if (user?.role !== undefined && ROLE_MAP[user.role] === 'reader') {
+      navigate('/reader/profile');
+    } else {
+      navigate('/profile');
     }
   };
 
@@ -92,16 +112,33 @@ export default function Navbar() {
       </Box>
       <Divider sx={{ borderColor: 'rgba(56, 189, 248, 0.12)' }} />
       <List sx={{ flex: 1, py: 1 }}>
-        {NAV_ITEMS.map((item) => (
-          <ListItem key={item.id} disablePadding>
-            <ListItemButton onClick={() => scrollToSection(item.id)} sx={{ py: 1.5 }}>
-              <ListItemText
-                primary={item.label}
-                primaryTypographyProps={{ fontWeight: 600, color: '#e0f2fe' }}
-              />
-            </ListItemButton>
-          </ListItem>
-        ))}
+        {isReaderArea
+          ? READER_NAV_ITEMS.map((item) => (
+              <ListItem key={item.path} disablePadding>
+                <ListItemButton
+                  component={RouterLink}
+                  to={item.path}
+                  onClick={() => setMobileOpen(false)}
+                  selected={location.pathname === item.path || (item.path !== '/reader' && location.pathname.startsWith(item.path))}
+                  sx={{ py: 1.5 }}
+                >
+                  <ListItemText
+                    primary={item.label}
+                    primaryTypographyProps={{ fontWeight: 600, color: '#e0f2fe' }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            ))
+          : NAV_ITEMS.map((item) => (
+              <ListItem key={item.id} disablePadding>
+                <ListItemButton onClick={() => scrollToSection(item.id)} sx={{ py: 1.5 }}>
+                  <ListItemText
+                    primary={item.label}
+                    primaryTypographyProps={{ fontWeight: 600, color: '#e0f2fe' }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            ))}
       </List>
       {!user && (
         <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
@@ -130,8 +167,8 @@ export default function Navbar() {
           <Toolbar disableGutters sx={{ justifyContent: 'space-between', minHeight: { xs: 64, sm: 72 } }}>
             <Box
               component={RouterLink}
-              to="/"
-              onClick={() => scrollToSection('home')}
+              to={isReaderArea ? '/reader' : '/'}
+              onClick={() => !isReaderArea && scrollToSection('home')}
               sx={{
                 display: 'flex',
                 alignItems: 'center',
@@ -149,26 +186,58 @@ export default function Navbar() {
             </Box>
 
             <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 0.5, alignItems: 'center', flex: 1, justifyContent: 'center' }}>
-              {NAV_ITEMS.map((item) => (
-                <Button
-                  key={item.id}
-                  color="inherit"
-                  onClick={() => scrollToSection(item.id)}
-                  sx={{
-                    fontWeight: 600,
-                    px: 2,
-                    color: 'text.secondary',
-                    '&:hover': { color: 'primary.light', bgcolor: 'rgba(30, 111, 217, 0.12)' },
-                  }}
-                >
-                  {item.label}
-                </Button>
-              ))}
+              {isReaderArea
+                ? READER_NAV_ITEMS.map((item) => {
+                    const active =
+                      location.pathname === item.path ||
+                      (item.path !== '/reader' && location.pathname.startsWith(item.path));
+                    return (
+                      <Button
+                        key={item.path}
+                        component={RouterLink}
+                        to={item.path}
+                        color="inherit"
+                        sx={{
+                          fontWeight: 600,
+                          px: 2,
+                          color: active ? 'primary.light' : 'text.secondary',
+                          bgcolor: active ? 'rgba(30, 111, 217, 0.15)' : 'transparent',
+                          '&:hover': { color: 'primary.light', bgcolor: 'rgba(30, 111, 217, 0.12)' },
+                        }}
+                      >
+                        {item.label}
+                      </Button>
+                    );
+                  })
+                : NAV_ITEMS.map((item) => (
+                    <Button
+                      key={item.id}
+                      color="inherit"
+                      onClick={() => scrollToSection(item.id)}
+                      sx={{
+                        fontWeight: 600,
+                        px: 2,
+                        color: 'text.secondary',
+                        '&:hover': { color: 'primary.light', bgcolor: 'rgba(30, 111, 217, 0.12)' },
+                      }}
+                    >
+                      {item.label}
+                    </Button>
+                  ))}
             </Box>
 
             <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
               {user ? (
                 <>
+                  {isReaderArea && (
+                    <IconButton
+                      sx={{ display: { xs: 'flex', md: 'none' }, color: '#7dd3fc' }}
+                      onClick={() => setMobileOpen(true)}
+                      aria-label="Open reader menu"
+                    >
+                      <MenuIcon />
+                    </IconButton>
+                  )}
                   <IconButton onClick={handleMenu} sx={{ p: 0 }} aria-label="Account menu">
                     <Avatar sx={{ bgcolor: 'primary.main', width: 40, height: 40 }}>
                       {user?.username?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
@@ -178,15 +247,18 @@ export default function Navbar() {
                     anchorEl={anchorEl}
                     open={Boolean(anchorEl)}
                     onClose={handleClose}
-                    PaperProps={{
-                      sx: {
-                        background: 'rgba(0, 21, 41, 0.95)',
-                        backdropFilter: 'blur(12px)',
-                        border: '1px solid rgba(56, 189, 248, 0.2)',
+                    slotProps={{
+                      paper: {
+                        sx: {
+                          background: 'rgba(0, 21, 41, 0.95)',
+                          backdropFilter: 'blur(12px)',
+                          border: '1px solid rgba(56, 189, 248, 0.2)',
+                        },
                       },
                     }}
                   >
                     <MenuItem onClick={handleDashboard}>Dashboard</MenuItem>
+                    <MenuItem onClick={handleProfile}>Profile</MenuItem>
                     <MenuItem onClick={handleLogout}>Logout</MenuItem>
                   </Menu>
                 </>
@@ -218,8 +290,10 @@ export default function Navbar() {
         anchor="right"
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
-        PaperProps={{ sx: { background: 'transparent', boxShadow: 'none', width: 280 } }}
-        SlideProps={{ timeout: 300 }}
+        slotProps={{
+          paper: { sx: { background: 'transparent', boxShadow: 'none', width: 280 } },
+        }}
+        transitionDuration={300}
       >
         {mobileNavContent}
       </Drawer>
