@@ -1,7 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { clearStoredSession, loadStoredUser } from '../utils/authStorage';
+import {
+  clearStoredSession,
+  loadStoredUser,
+  saveSessionAuth,
+  getStoredAccessToken,
+  getStoredRefreshToken,
+} from '../utils/authStorage';
 import { ROLE_MAP } from '../constants/roles';
 import { AuthContext } from './authContext';
 
@@ -22,9 +28,7 @@ export default function AuthProvider({ children }) {
       throw new Error('Invalid session response from server');
     }
 
-    localStorage.setItem('access', access);
-    localStorage.setItem('refresh', refresh);
-    localStorage.setItem('user', JSON.stringify(userData));
+    saveSessionAuth({ access, refresh, user: userData });
     setUser(userData);
 
     if (userData?.role !== undefined && ROLE_MAP[userData.role]) {
@@ -94,7 +98,11 @@ export default function AuthProvider({ children }) {
 
   const updateSessionUser = (userData) => {
     if (!userData) return;
-    localStorage.setItem('user', JSON.stringify(userData));
+    saveSessionAuth({
+      access: getStoredAccessToken(),
+      refresh: getStoredRefreshToken(),
+      user: userData,
+    });
     setUser(userData);
   };
 

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { clearStoredSession } from '../utils/authStorage';
+import { clearStoredSession, getStoredAccessToken, getStoredRefreshToken } from '../utils/authStorage';
 
 const api = axios.create({
   baseURL: 'http://localhost:8000',
@@ -20,7 +20,7 @@ api.interceptors.request.use(
       delete config.headers['Content-Type'];
     }
     if (!isPublicAuthRequest(config.url)) {
-      const token = localStorage.getItem('access');
+      const token = getStoredAccessToken();
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -44,10 +44,10 @@ api.interceptors.response.use(
     ) {
       originalRequest._retry = true;
       try {
-        const refresh = localStorage.getItem('refresh');
+        const refresh = getStoredRefreshToken();
         if (refresh) {
           const response = await axios.post('http://localhost:8000/api/token/refresh/', { refresh });
-          localStorage.setItem('access', response.data.access);
+          sessionStorage.setItem('access', response.data.access);
           originalRequest.headers.Authorization = `Bearer ${response.data.access}`;
           return api(originalRequest); // Retry the original request
         }
