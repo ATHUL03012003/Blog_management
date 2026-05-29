@@ -7,6 +7,7 @@ from category.serializers import CategorySerializer, TagSerializer
 class PostSerializer(serializers.ModelSerializer):
     category_detail = CategorySerializer(source="category", read_only=True)
     tags_detail = TagSerializer(source="tags", many=True, read_only=True)
+    author_username = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
@@ -18,6 +19,7 @@ class PostSerializer(serializers.ModelSerializer):
             "excerpt",
             "image",
             "author",
+            "author_username",
             "status",
             "category",
             "tags",
@@ -26,16 +28,22 @@ class PostSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "published_at",
+            "rejection_reason",
+            "improvement_areas",
         ]
         read_only_fields = [
             "id",
             "author",
+            "author_username",
             "slug",
             "status",
             "created_at",
             "updated_at",
             "published_at",
         ]
+
+    def get_author_username(self, obj):
+        return obj.author.username if obj.author_id else None
 
 
 class PostWriteSerializer(serializers.ModelSerializer):
@@ -58,3 +66,8 @@ class PostWriteSerializer(serializers.ModelSerializer):
         if not value or not value.strip():
             raise serializers.ValidationError("Content is required.")
         return value
+
+
+class RejectPostSerializer(serializers.Serializer):
+    rejection_reason = serializers.CharField(required=True, min_length=10)
+    improvement_areas = serializers.CharField(required=True, min_length=10)

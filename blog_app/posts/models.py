@@ -15,5 +15,7 @@ class Post(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     published_at = models.DateTimeField(null=True, blank=True)
     image = models.ImageField(upload_to="posts/", null=True, blank=True)
+    rejection_reason = models.TextField(blank=True)
+    improvement_areas = models.TextField(blank=True)
     def __str__(self):
         return self.title

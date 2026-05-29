@@ -60,7 +60,7 @@ export default function HomeOverview() {
           Author studio — {user?.username}
         </Typography>
         <Typography color="text.secondary" variant="body1">
-          Draft articles, submit for editorial review, or publish directly to your blog.
+          Create drafts, submit for editor review, and publish only after approval.
         </Typography>
       </Box>
 

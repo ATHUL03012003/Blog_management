@@ -10,7 +10,7 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 from common.enum import UserRole
 from .permissions import IsAuthor, IsEditor, IsAdmin
-from .serializers import PostSerializer, PostWriteSerializer
+from .serializers import PostSerializer, PostWriteSerializer, RejectPostSerializer
 from .services import PostService
 from .models import Post
 from common.enum import PostStatus
@@ -111,6 +111,31 @@ class PublishPostView(APIView):
         if not is_owner and not is_privileged:
             return Response({"error": "Permission denied"}, status=403)
 
+        if request.user.role == UserRole.AUTHOR:
+            if post.author != request.user:
+                return Response({"error": "Permission denied"}, status=403)
+            if post.status != PostStatus.APPROVED:
+                return Response(
+                    {
+                        "error": (
+                            "This post must be approved by an editor before you can publish. "
+                            "Submit it for review first."
+                        )
+                    },
+                    status=400,
+                )
+        elif not is_privileged:
+            return Response({"error": "Permission denied"}, status=403)
+        elif post.status not in [
+            PostStatus.DRAFT,
+            PostStatus.REJECTED,
+            PostStatus.APPROVED,
+        ]:
+            return Response(
+                {"error": "This post cannot be published in its current state."},
+                status=400,
+            )
+
         post = PostService.publish_post(post)
         return Response(PostSerializer(post).data)
 
@@ -143,7 +168,7 @@ class ApprovePostView(APIView):
         if post.status != PostStatus.REVIEW:
             return Response({"error": "Only posts in review can be approved"}, status=400)
 
-        post = PostService.publish_post(post)
+        post = PostService.approve_post(post)
         return Response(PostSerializer(post).data)
 
 
@@ -156,7 +181,15 @@ class RejectPostView(APIView):
         if post.status != PostStatus.REVIEW:
             return Response({"error": "Only posts in review can be rejected"}, status=400)
 
-        post = PostService.reject_post(post)
+        serializer = RejectPostSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
+
+        post = PostService.reject_post(
+            post,
+            rejection_reason=serializer.validated_data["rejection_reason"],
+            improvement_areas=serializer.validated_data["improvement_areas"],
+        )
         return Response(PostSerializer(post).data)
 
 

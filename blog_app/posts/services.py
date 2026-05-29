@@ -65,6 +65,12 @@ class PostService:
         post.delete()
 
     @staticmethod
+    def approve_post(post):
+        post.status = PostStatus.APPROVED
+        post.save(update_fields=["status", "updated_at"])
+        return post
+
+    @staticmethod
     def publish_post(post):
         post.status = PostStatus.PUBLISHED
         post.published_at = timezone.now()
@@ -74,11 +80,24 @@ class PostService:
     @staticmethod
     def submit_for_review(post):
         post.status = PostStatus.REVIEW
-        post.save()
+        post.rejection_reason = ""
+        post.improvement_areas = ""
+        post.save(
+            update_fields=["status", "rejection_reason", "improvement_areas", "updated_at"]
+        )
         return post
 
     @staticmethod
-    def reject_post(post):
+    def reject_post(post, rejection_reason="", improvement_areas=""):
         post.status = PostStatus.REJECTED
-        post.save()
+        post.rejection_reason = rejection_reason.strip()
+        post.improvement_areas = improvement_areas.strip()
+        post.save(
+            update_fields=[
+                "status",
+                "rejection_reason",
+                "improvement_areas",
+                "updated_at",
+            ]
+        )
         return post

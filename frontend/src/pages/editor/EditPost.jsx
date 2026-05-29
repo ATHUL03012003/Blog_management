@@ -29,12 +29,11 @@ import PostEditorLayout, { EMPTY_FORM } from '../../components/author/PostEditor
 import parseApiError from '../../utils/parseApiError';
 import {
   POST_STATUS,
-  canEditPost,
   canSubmitForReview,
-  canAuthorPublish,
+  canEditorPublish,
   canDelete,
 } from '../../constants/postStatus';
-import RejectionFeedback from '../../components/author/RejectionFeedback';
+import { editorPaths } from '../../constants/editorPaths';
 
 export default function EditPost() {
   const { slug } = useParams();
@@ -75,12 +74,9 @@ export default function EditPost() {
     return () => { cancelled = true; };
   }, [slug]);
 
-  const inReview = post?.status === POST_STATUS.REVIEW;
-  const canEdit = post && (canEditPost(post.status) || post.status === POST_STATUS.PUBLISHED);
-
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!canEdit || inReview) return;
+    if (!post) return;
     if (!values.title.trim()) {
       setError('Title is required.');
       return;
@@ -102,14 +98,10 @@ export default function EditPost() {
         coverFile: values.coverFile,
       });
       setPost(updated);
-      setValues((v) => ({
-        ...v,
-        coverFile: null,
-        coverUrl: updated.image || null,
-      }));
+      setValues((v) => ({ ...v, coverFile: null, coverUrl: updated.image || null }));
       setSuccess('Changes saved.');
       if (updated.slug !== slug) {
-        navigate(`/author/posts/${updated.slug}/edit`, { replace: true });
+        navigate(editorPaths.editPost(updated.slug), { replace: true });
       }
     } catch (err) {
       setError(parseApiError(err));
@@ -137,7 +129,7 @@ export default function EditPost() {
     setActing('delete');
     try {
       await deletePost(slug);
-      navigate('/author/posts');
+      navigate(editorPaths.posts);
     } catch (err) {
       setError(parseApiError(err));
       setActing('');
@@ -160,35 +152,27 @@ export default function EditPost() {
           variant="outlined"
           startIcon={<SendIcon />}
           disabled={!!acting || saving}
-          onClick={() =>
-            runAction('submit', () => submitPostForReview(slug), 'Submitted for editor review.', null)
-          }
+          onClick={() => runAction('submit', () => submitPostForReview(slug), 'Submitted for review.', null)}
           sx={{ borderColor: 'rgba(245,158,11,0.5)', color: '#fbbf24' }}
         >
           {acting === 'submit' ? '…' : 'Submit for review'}
         </Button>
       )}
-      {canAuthorPublish(post.status) && (
+      {canEditorPublish(post.status) && (
         <Button
-          variant="contained"
-          color="success"
+          variant="outlined"
           startIcon={<PublishIcon />}
           disabled={!!acting || saving}
           onClick={() =>
-            runAction('publish', () => publishPost(slug), 'Post published!', `/author/posts/${slug}`)
+            runAction('publish', () => publishPost(slug), 'Post published!', editorPaths.post(slug))
           }
+          sx={{ borderColor: 'rgba(34,197,94,0.5)', color: '#86efac' }}
         >
-          {acting === 'publish' ? '…' : 'Publish'}
+          {acting === 'publish' ? '…' : 'Publish now'}
         </Button>
       )}
       {canDelete(post.status) && (
-        <Button
-          color="error"
-          variant="text"
-          startIcon={<DeleteIcon />}
-          disabled={!!acting || saving}
-          onClick={() => setDeleteOpen(true)}
-        >
+        <Button color="error" variant="text" startIcon={<DeleteIcon />} disabled={!!acting || saving} onClick={() => setDeleteOpen(true)}>
           Delete
         </Button>
       )}
@@ -197,28 +181,11 @@ export default function EditPost() {
 
   return (
     <Box component={motion.div} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-      {inReview && (
-        <Alert severity="info" sx={{ mb: 2 }}>
-          This post is with an editor for review. You cannot edit it until it is approved or rejected.
-        </Alert>
-      )}
-      <RejectionFeedback post={post} />
-      {post.status === POST_STATUS.APPROVED && (
-        <Alert severity="success" sx={{ mb: 2 }}>
-          An editor approved this post. You can make final edits, then use <strong>Publish</strong> to make it live.
-        </Alert>
-      )}
-      {post.status === POST_STATUS.REJECTED && !post.rejection_reason && (
-        <Alert severity="warning" sx={{ mb: 2 }}>
-          This post was rejected. Update it and submit again for editor review.
-        </Alert>
-      )}
-
       <PostEditorLayout
         pageTitle="Edit post"
         status={post.status}
         backButton={
-          <IconButton onClick={() => navigate(`/author/posts/${slug}`)} sx={{ color: '#7dd3fc' }} aria-label="Back">
+          <IconButton onClick={() => navigate(editorPaths.post(slug))} sx={{ color: '#7dd3fc' }} aria-label="Back">
             <ArrowBackIcon />
           </IconButton>
         }
@@ -228,7 +195,6 @@ export default function EditPost() {
         saving={saving}
         error={error}
         success={success}
-        disabled={!canEdit || inReview}
         submitLabel="Save changes"
         extraActions={extraActions}
       />
