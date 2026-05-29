@@ -14,3 +14,4 @@ class PostStatus(models.IntegerChoices):
     REVIEW = 2, "Review"
     PUBLISHED = 3, "Published"
     REJECTED = 4, "Rejected"
+    APPROVED = 5, "Approved"

@@ -18,6 +18,7 @@ export const ROLE_LABELS = {
 
 export const READER_ROLE = 1;
 export const AUTHOR_ROLE = 2;
+export const EDITOR_ROLE = 3;
 export const ADMIN_ROLE = 0;
 export const SUPERADMIN_ROLE = 5;
 

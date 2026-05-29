@@ -1,12 +1,35 @@
-import { Typography, Container, Box } from '@mui/material';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import ProtectedRoute from '../../components/ProtectedRoute';
+import ReaderLayout from '../../components/reader/ReaderLayout';
+import HomeOverview from './HomeOverview';
+import ReviewQueue from './ReviewQueue';
+import ReviewPost from './ReviewPost';
+import CategoriesManage from './CategoriesManage';
+import MyPosts from './MyPosts';
+import CreatePost from './CreatePost';
+import EditPost from './EditPost';
+import PostDetail from './PostDetail';
+import Profile from '../Profile';
+
+const EDITOR_ROLE = 3;
 
 export default function EditorDashboard() {
   return (
-    <Container maxWidth="xl" sx={{ mt: 4 }}>
-      <Box sx={{ p: 4, background: 'rgba(30, 41, 59, 0.5)', borderRadius: 3 }}>
-        <Typography variant="h4" gutterBottom>Editor Dashboard</Typography>
-        <Typography color="text.secondary">Review author submissions, manage content quality, and moderate category tags.</Typography>
-      </Box>
-    </Container>
+    <ProtectedRoute allowedRoles={[EDITOR_ROLE]}>
+      <Routes>
+        <Route element={<ReaderLayout />}>
+          <Route index element={<HomeOverview />} />
+          <Route path="review" element={<ReviewQueue />} />
+          <Route path="review/:slug" element={<ReviewPost />} />
+          <Route path="categories" element={<CategoriesManage />} />
+          <Route path="posts" element={<MyPosts />} />
+          <Route path="posts/new" element={<CreatePost />} />
+          <Route path="posts/:slug" element={<PostDetail />} />
+          <Route path="posts/:slug/edit" element={<EditPost />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="*" element={<Navigate to="/editor" replace />} />
+        </Route>
+      </Routes>
+    </ProtectedRoute>
   );
 }

@@ -17,6 +17,7 @@ import { fetchMyPosts } from '../../services/authorPosts';
 import { readerGlassSx } from '../../components/reader/ReaderLayout';
 import PostStatusChip from '../../components/author/PostStatusChip';
 import { POST_STATUS, POST_STATUS_LABELS } from '../../constants/postStatus';
+import { editorPaths } from '../../constants/editorPaths';
 
 const FILTERS = [
   { key: 'all', label: 'All' },
@@ -26,11 +27,6 @@ const FILTERS = [
   { key: POST_STATUS.PUBLISHED, label: POST_STATUS_LABELS[POST_STATUS.PUBLISHED] },
   { key: POST_STATUS.REJECTED, label: POST_STATUS_LABELS[POST_STATUS.REJECTED] },
 ];
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.35 } },
-};
 
 export default function MyPosts() {
   const navigate = useNavigate();
@@ -63,14 +59,14 @@ export default function MyPosts() {
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2, mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <IconButton onClick={() => navigate('/author')} sx={{ color: '#7dd3fc' }} aria-label="Back">
+          <IconButton onClick={() => navigate(editorPaths.home)} sx={{ color: '#7dd3fc' }} aria-label="Back">
             <ArrowBackIcon />
           </IconButton>
           <Typography variant="h5" fontWeight={800}>
             My posts
           </Typography>
         </Box>
-        <Button component={RouterLink} to="/author/posts/new" variant="contained" startIcon={<AddIcon />}>
+        <Button component={RouterLink} to={editorPaths.newPost} variant="contained" startIcon={<AddIcon />}>
           New post
         </Button>
       </Box>
@@ -97,40 +93,19 @@ export default function MyPosts() {
         <Typography color="text.secondary">No posts in this category yet.</Typography>
       ) : (
         <Box component={motion.div} initial="hidden" animate="visible">
-          {filtered.map((post, i) => (
+          {filtered.map((post) => (
             <Box
               key={post.id}
               component={motion.div}
-              variants={itemVariants}
-              custom={i}
               whileHover={{ scale: 1.01, y: -2 }}
-              sx={{
-                ...readerGlassSx,
-                p: 2.5,
-                mb: 2,
-                display: 'block',
-                textDecoration: 'none',
-                color: 'inherit',
-              }}
+              sx={{ ...readerGlassSx, p: 2.5, mb: 2 }}
             >
-              <Box
-                component={RouterLink}
-                to={`/author/posts/${post.slug}`}
-                sx={{ textDecoration: 'none', color: 'inherit' }}
-              >
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2, mb: 1 }}>
-                  <Typography variant="h6" fontWeight={700}>
-                    {post.title}
-                  </Typography>
+              <Box component={RouterLink} to={editorPaths.post(post.slug)} sx={{ textDecoration: 'none', color: 'inherit' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, mb: 1 }}>
+                  <Typography variant="h6" fontWeight={700}>{post.title}</Typography>
                   <PostStatusChip status={post.status} />
                 </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                  {post.excerpt || 'No excerpt'}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  Updated {new Date(post.updated_at).toLocaleDateString()}
-                  {post.published_at && ` · Published ${new Date(post.published_at).toLocaleDateString()}`}
-                </Typography>
+                <Typography variant="body2" color="text.secondary">{post.excerpt || 'No excerpt'}</Typography>
               </Box>
             </Box>
           ))}

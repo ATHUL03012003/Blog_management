@@ -44,6 +44,14 @@ const AUTHOR_NAV_ITEMS = [
   { label: 'Profile', path: '/author/profile' },
 ];
 
+const EDITOR_NAV_ITEMS = [
+  { label: 'Overview', path: '/editor', exact: true },
+  { label: 'Review queue', path: '/editor/review' },
+  { label: 'Categories', path: '/editor/categories' },
+  { label: 'My posts', path: '/editor/posts' },
+  { label: 'Profile', path: '/editor/profile' },
+];
+
 function isNavActive(pathname, item) {
   if (item.exact) return pathname === item.path;
   return pathname === item.path || pathname.startsWith(`${item.path}/`);
@@ -58,9 +66,16 @@ export default function Navbar() {
 
   const isReaderArea = location.pathname.startsWith('/reader');
   const isAuthorArea = location.pathname.startsWith('/author');
-  const isRoleDashboard = isReaderArea || isAuthorArea;
-  const dashboardNav = isReaderArea ? READER_NAV_ITEMS : isAuthorArea ? AUTHOR_NAV_ITEMS : null;
-  const dashboardHome = isReaderArea ? '/reader' : isAuthorArea ? '/author' : '/';
+  const isEditorArea = location.pathname.startsWith('/editor');
+  const isRoleDashboard = isReaderArea || isAuthorArea || isEditorArea;
+  const dashboardNav = isReaderArea
+    ? READER_NAV_ITEMS
+    : isAuthorArea
+      ? AUTHOR_NAV_ITEMS
+      : isEditorArea
+        ? EDITOR_NAV_ITEMS
+        : null;
+  const dashboardHome = isReaderArea ? '/reader' : isAuthorArea ? '/author' : isEditorArea ? '/editor' : '/';
 
   const handleMenu = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
@@ -87,6 +102,7 @@ export default function Navbar() {
     const rolePath = user?.role !== undefined ? ROLE_MAP[user.role] : null;
     if (rolePath === 'reader') navigate('/reader/profile');
     else if (rolePath === 'author') navigate('/author/profile');
+    else if (rolePath === 'editor') navigate('/editor/profile');
     else navigate('/profile');
   };
 
@@ -139,7 +155,7 @@ export default function Navbar() {
                 >
                   <ListItemText
                     primary={item.label}
-                    primaryTypographyProps={{ fontWeight: 600, color: '#e0f2fe' }}
+                    slotProps={{ primary: { sx: { fontWeight: 600, color: '#e0f2fe' } } }}
                   />
                 </ListItemButton>
               </ListItem>
@@ -149,7 +165,7 @@ export default function Navbar() {
                 <ListItemButton onClick={() => scrollToSection(item.id)} sx={{ py: 1.5 }}>
                   <ListItemText
                     primary={item.label}
-                    primaryTypographyProps={{ fontWeight: 600, color: '#e0f2fe' }}
+                    slotProps={{ primary: { sx: { fontWeight: 600, color: '#e0f2fe' } } }}
                   />
                 </ListItemButton>
               </ListItem>
