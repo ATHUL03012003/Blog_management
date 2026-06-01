@@ -18,10 +18,7 @@ import {
 import { fetchManageableUsers, adminSetUserRole } from '../../services/user';
 import { READER_ROLE, AUTHOR_ROLE } from '../../constants/roles';
 import { readerGlassSx } from '../reader/ReaderLayout';
-
-function parseApiError(err) {
-  return err.response?.data?.error || 'Action failed. Please try again.';
-}
+import parseApiError from '../../utils/parseApiError';
 
 export default function UserRoleManagement() {
   const [tab, setTab] = useState(0);

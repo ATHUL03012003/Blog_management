@@ -1,18 +1,30 @@
-import { Typography, Container, Box } from '@mui/material';
-import UserRoleManagement from '../../components/admin/UserRoleManagement';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import ProtectedRoute from '../../components/ProtectedRoute';
+import ReaderLayout from '../../components/reader/ReaderLayout';
+import { SUPERADMIN_ROLE } from '../../constants/roles';
+import HomeOverview from '../admin/HomeOverview';
+import Users from '../admin/Users';
+import AllPosts from '../admin/AllPosts';
+import ReviewQueue from '../editor/ReviewQueue';
+import ReviewPost from '../editor/ReviewPost';
+import CategoriesManage from '../editor/CategoriesManage';
+import Profile from '../Profile';
 
 export default function SuperAdminDashboard() {
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 6 }}>
-      <Box sx={{ p: 4, background: 'rgba(30, 41, 59, 0.5)', borderRadius: 3, mb: 1 }}>
-        <Typography variant="h4" gutterBottom>
-          Super Admin Panel
-        </Typography>
-        <Typography color="text.secondary">
-          Control global policies and manage users across the platform.
-        </Typography>
-      </Box>
-      <UserRoleManagement />
-    </Container>
+    <ProtectedRoute allowedRoles={[SUPERADMIN_ROLE]}>
+      <Routes>
+        <Route element={<ReaderLayout />}>
+          <Route index element={<HomeOverview />} />
+          <Route path="users" element={<Users />} />
+          <Route path="posts" element={<AllPosts />} />
+          <Route path="review" element={<ReviewQueue />} />
+          <Route path="review/:slug" element={<ReviewPost />} />
+          <Route path="categories" element={<CategoriesManage allowCategoryDelete />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="*" element={<Navigate to="/superadmin" replace />} />
+        </Route>
+      </Routes>
+    </ProtectedRoute>
   );
 }

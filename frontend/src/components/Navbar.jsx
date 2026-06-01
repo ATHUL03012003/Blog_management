@@ -52,6 +52,24 @@ const EDITOR_NAV_ITEMS = [
   { label: 'Profile', path: '/editor/profile' },
 ];
 
+const ADMIN_NAV_ITEMS = [
+  { label: 'Overview', path: '/admin', exact: true },
+  { label: 'Users', path: '/admin/users' },
+  { label: 'All posts', path: '/admin/posts' },
+  { label: 'Review queue', path: '/admin/review' },
+  { label: 'Categories', path: '/admin/categories' },
+  { label: 'Profile', path: '/admin/profile' },
+];
+
+const SUPERADMIN_NAV_ITEMS = [
+  { label: 'Overview', path: '/superadmin', exact: true },
+  { label: 'Users', path: '/superadmin/users' },
+  { label: 'All posts', path: '/superadmin/posts' },
+  { label: 'Review queue', path: '/superadmin/review' },
+  { label: 'Categories', path: '/superadmin/categories' },
+  { label: 'Profile', path: '/superadmin/profile' },
+];
+
 function isNavActive(pathname, item) {
   if (item.exact) return pathname === item.path;
   return pathname === item.path || pathname.startsWith(`${item.path}/`);
@@ -67,15 +85,32 @@ export default function Navbar() {
   const isReaderArea = location.pathname.startsWith('/reader');
   const isAuthorArea = location.pathname.startsWith('/author');
   const isEditorArea = location.pathname.startsWith('/editor');
-  const isRoleDashboard = isReaderArea || isAuthorArea || isEditorArea;
+  const isAdminArea = location.pathname.startsWith('/admin');
+  const isSuperAdminArea = location.pathname.startsWith('/superadmin');
+  const isRoleDashboard =
+    isReaderArea || isAuthorArea || isEditorArea || isAdminArea || isSuperAdminArea;
   const dashboardNav = isReaderArea
     ? READER_NAV_ITEMS
     : isAuthorArea
       ? AUTHOR_NAV_ITEMS
       : isEditorArea
         ? EDITOR_NAV_ITEMS
-        : null;
-  const dashboardHome = isReaderArea ? '/reader' : isAuthorArea ? '/author' : isEditorArea ? '/editor' : '/';
+        : isAdminArea
+          ? ADMIN_NAV_ITEMS
+          : isSuperAdminArea
+            ? SUPERADMIN_NAV_ITEMS
+            : null;
+  const dashboardHome = isReaderArea
+    ? '/reader'
+    : isAuthorArea
+      ? '/author'
+      : isEditorArea
+        ? '/editor'
+        : isAdminArea
+          ? '/admin'
+          : isSuperAdminArea
+            ? '/superadmin'
+            : '/';
 
   const handleMenu = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
@@ -103,6 +138,8 @@ export default function Navbar() {
     if (rolePath === 'reader') navigate('/reader/profile');
     else if (rolePath === 'author') navigate('/author/profile');
     else if (rolePath === 'editor') navigate('/editor/profile');
+    else if (rolePath === 'admin') navigate('/admin/profile');
+    else if (rolePath === 'superadmin') navigate('/superadmin/profile');
     else navigate('/profile');
   };
 

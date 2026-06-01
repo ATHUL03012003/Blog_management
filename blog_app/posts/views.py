@@ -202,6 +202,15 @@ class ReviewQueueView(APIView):
         return Response(serializer.data)
 
 
+class AdminAllPostsView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get(self, request):
+        posts = Post.objects.select_related("author", "category").order_by("-created_at")
+        serializer = PostSerializer(posts, many=True)
+        return Response(serializer.data)
+
+
 class MyPostsView(APIView):
     permission_classes = [IsAuthenticated]
 

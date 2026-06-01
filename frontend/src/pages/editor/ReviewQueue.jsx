@@ -13,7 +13,7 @@ import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { fetchReviewQueue } from '../../services/editorPosts';
 import { readerGlassSx } from '../../components/reader/ReaderLayout';
 import PostStatusChip from '../../components/author/PostStatusChip';
-import { editorPaths } from '../../constants/editorPaths';
+import { useDashboardPaths } from '../../hooks/useDashboardPaths';
 
 const itemVariants = {
   hidden: { opacity: 0, y: 16 },
@@ -22,6 +22,7 @@ const itemVariants = {
 
 export default function ReviewQueue() {
   const navigate = useNavigate();
+  const paths = useDashboardPaths();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -46,7 +47,7 @@ export default function ReviewQueue() {
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2, mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <IconButton onClick={() => navigate(editorPaths.home)} sx={{ color: '#7dd3fc' }} aria-label="Back">
+          <IconButton onClick={() => navigate(paths.home)} sx={{ color: '#7dd3fc' }} aria-label="Back">
             <ArrowBackIcon />
           </IconButton>
           <Typography variant="h5" fontWeight={800}>
@@ -85,7 +86,7 @@ export default function ReviewQueue() {
             >
               <Box
                 component={RouterLink}
-                to={editorPaths.reviewPost(post.slug)}
+                to={paths.reviewPost(post.slug)}
                 sx={{ textDecoration: 'none', color: 'inherit' }}
               >
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2, mb: 1 }}>

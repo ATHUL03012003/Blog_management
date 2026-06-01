@@ -15,6 +15,11 @@ export async function updateCategory(slug, payload) {
   return data;
 }
 
+export async function deleteCategory(slug) {
+  const { data } = await api.delete(`/api/categories/${slug}/delete/`);
+  return data;
+}
+
 export async function fetchTags() {
   const { data } = await api.get('/api/categories/tags/');
   return data;

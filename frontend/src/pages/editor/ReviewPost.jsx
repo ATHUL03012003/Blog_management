@@ -20,13 +20,14 @@ import { readerGlassSx } from '../../components/reader/ReaderLayout';
 import BlogArticleRenderer from '../../components/author/BlogArticleRenderer';
 import PostStatusChip from '../../components/author/PostStatusChip';
 import parseApiError from '../../utils/parseApiError';
-import { editorPaths } from '../../constants/editorPaths';
+import { useDashboardPaths } from '../../hooks/useDashboardPaths';
 import { POST_STATUS } from '../../constants/postStatus';
 import RejectPostDialog from '../../components/editor/RejectPostDialog';
 
 export default function ReviewPost() {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const paths = useDashboardPaths();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState('');
@@ -55,7 +56,7 @@ export default function ReviewPost() {
     try {
       await approvePost(slug);
       setMsg({ type: 'success', text: 'Post approved. The author can now publish it.' });
-      setTimeout(() => navigate(editorPaths.review), 900);
+      setTimeout(() => navigate(paths.review), 900);
     } catch (err) {
       setMsg({ type: 'error', text: parseApiError(err) });
     } finally {
@@ -70,7 +71,7 @@ export default function ReviewPost() {
       await rejectPost(slug, { rejection_reason, improvement_areas });
       setRejectOpen(false);
       setMsg({ type: 'success', text: 'Post rejected with feedback sent to the author.' });
-      setTimeout(() => navigate(editorPaths.review), 900);
+      setTimeout(() => navigate(paths.review), 900);
     } catch (err) {
       setRejectError(parseApiError(err));
     } finally {
@@ -92,20 +93,22 @@ export default function ReviewPost() {
     <Box component={motion.div} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2, mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <IconButton onClick={() => navigate(editorPaths.review)} sx={{ color: '#7dd3fc' }} aria-label="Back">
+          <IconButton onClick={() => navigate(paths.review)} sx={{ color: '#7dd3fc' }} aria-label="Back">
             <ArrowBackIcon />
           </IconButton>
           <PostStatusChip status={post.status} size="medium" />
         </Box>
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-          <Button
-            variant="outlined"
-            startIcon={<EditIcon />}
-            onClick={() => navigate(editorPaths.editPost(slug))}
-            sx={{ borderColor: 'rgba(56, 189, 248, 0.4)', color: '#7dd3fc' }}
-          >
-            Edit post
-          </Button>
+          {paths.editPost && (
+            <Button
+              variant="outlined"
+              startIcon={<EditIcon />}
+              onClick={() => navigate(paths.editPost(slug))}
+              sx={{ borderColor: 'rgba(56, 189, 248, 0.4)', color: '#7dd3fc' }}
+            >
+              Edit post
+            </Button>
+          )}
           {inReview && (
             <>
               <Button

@@ -22,17 +22,19 @@ import {
   fetchCategories,
   createCategory,
   updateCategory,
+  deleteCategory,
   fetchTags,
   createTag,
   updateTag,
   deleteTag,
 } from '../../services/editorCategories';
 import { readerGlassSx } from '../../components/reader/ReaderLayout';
-import { editorPaths } from '../../constants/editorPaths';
+import { useDashboardPaths } from '../../hooks/useDashboardPaths';
 import parseApiError from '../../utils/parseApiError';
 
-export default function CategoriesManage() {
+export default function CategoriesManage({ allowCategoryDelete = false }) {
   const navigate = useNavigate();
+  const paths = useDashboardPaths();
   const [tab, setTab] = useState(0);
   const [categories, setCategories] = useState([]);
   const [tags, setTags] = useState([]);
@@ -109,10 +111,21 @@ export default function CategoriesManage() {
     }
   };
 
+  const handleDeleteCategory = async (slug) => {
+    if (!window.confirm('Delete this category?')) return;
+    try {
+      await deleteCategory(slug);
+      setMsg({ type: 'success', text: 'Category deleted.' });
+      await load();
+    } catch (err) {
+      setMsg({ type: 'error', text: parseApiError(err) });
+    }
+  };
+
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-        <IconButton onClick={() => navigate(editorPaths.home)} sx={{ color: '#7dd3fc' }} aria-label="Back">
+        <IconButton onClick={() => navigate(paths.home)} sx={{ color: '#7dd3fc' }} aria-label="Back">
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h5" fontWeight={800}>
@@ -184,6 +197,7 @@ export default function CategoriesManage() {
                   <ListItemSecondaryAction>
                     <Button
                       size="small"
+                      sx={{ mr: allowCategoryDelete ? 1 : 0 }}
                       onClick={() => {
                         setEditingCat(cat);
                         setCatForm({ name: cat.name, description: cat.description || '' });
@@ -191,6 +205,11 @@ export default function CategoriesManage() {
                     >
                       Edit
                     </Button>
+                    {allowCategoryDelete && (
+                      <Button size="small" color="error" onClick={() => handleDeleteCategory(cat.slug)}>
+                        Delete
+                      </Button>
+                    )}
                   </ListItemSecondaryAction>
                 </ListItem>
               ))}
