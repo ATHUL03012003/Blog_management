@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'cloudinary',
     'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt',
@@ -81,8 +82,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'blog_app.wsgi.application'
 
-MEDIA_URL = "/media/"
+# Post images live on Cloudinary; the DB stores HTTPS URLs only (see posts/cloudinary_utils.py).
+import cloudinary
 
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+    secure=True,
+)
+
+MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases

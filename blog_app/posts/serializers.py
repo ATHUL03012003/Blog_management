@@ -47,6 +47,9 @@ class PostSerializer(serializers.ModelSerializer):
 
 
 class PostWriteSerializer(serializers.ModelSerializer):
+    # Multipart file on write; model stores Cloudinary HTTPS URL only
+    image = serializers.ImageField(write_only=True, required=False, allow_null=True)
+
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(),
         many=True,
