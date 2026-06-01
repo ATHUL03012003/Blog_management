@@ -7,11 +7,14 @@ from django.utils.text import slugify
 import uuid
 
 from .utils import sanitize_post_html
+from .cloudinary_utils import COVER_FOLDER, upload_image
 
 
 class PostService:
     @staticmethod
     def create_post(user, data):
+        image_file = data.pop("image", None)
+        image_url = upload_image(image_file, folder=COVER_FOLDER) if image_file else None
         slug = slugify(data["title"]) + "-" + str(uuid.uuid4())[:6]
         post = Post.objects.create(
             title=data["title"],
@@ -21,10 +24,8 @@ class PostService:
             author=user,
             status=PostStatus.DRAFT,
             category=data.get("category"),
+            image=image_url,
         )
-        if data.get("image"):
-            post.image = data["image"]
-            post.save(update_fields=["image"])
         tags = data.get("tags")
         if tags is not None:
             post.tags.set(tags)
@@ -40,6 +41,9 @@ class PostService:
 
     @staticmethod
     def update_post(post, data):
+        image_file = data.pop("image", None)
+        if image_file:
+            post.image = upload_image(image_file, folder=COVER_FOLDER)
         if "title" in data and data["title"] != post.title:
             new_slug = slugify(data["title"]) + "-" + str(uuid.uuid4())[:6]
             post.slug = new_slug
@@ -51,8 +55,6 @@ class PostService:
             post.excerpt = data["excerpt"]
         if "category" in data:
             post.category = data["category"]
-        if "image" in data:
-            post.image = data["image"]
         post.save()
 
         if "tags" in data:

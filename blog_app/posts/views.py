@@ -1,8 +1,4 @@
-import os
-import uuid
-
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
+from django.core.exceptions import ImproperlyConfigured
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -14,9 +10,15 @@ from .serializers import PostSerializer, PostWriteSerializer, RejectPostSerializ
 from .services import PostService
 from .models import Post
 from common.enum import PostStatus
+from .cloudinary_utils import CONTENT_FOLDER, upload_image
 
-MAX_IMAGE_SIZE = 5 * 1024 * 1024
-ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+
+def _media_upload_error_response(exc):
+    if isinstance(exc, ValueError):
+        return Response({"error": str(exc)}, status=400)
+    if isinstance(exc, ImproperlyConfigured):
+        return Response({"error": str(exc)}, status=503)
+    return Response({"error": "Image upload failed."}, status=500)
 
 
 def _can_write_posts(user):
@@ -43,7 +45,10 @@ class CreatePostView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=400)
 
-        post = PostService.create_post(request.user, serializer.validated_data)
+        try:
+            post = PostService.create_post(request.user, serializer.validated_data)
+        except (ValueError, ImproperlyConfigured) as exc:
+            return _media_upload_error_response(exc)
         return Response(PostSerializer(post).data, status=201)
 
 
@@ -75,7 +80,10 @@ class UpdatePostView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=400)
 
-        post = PostService.update_post(post, serializer.validated_data)
+        try:
+            post = PostService.update_post(post, serializer.validated_data)
+        except (ValueError, ImproperlyConfigured) as exc:
+            return _media_upload_error_response(exc)
         return Response(PostSerializer(post).data)
 
 
@@ -220,22 +228,9 @@ class UploadPostImageView(APIView):
             return Response({"error": "Permission denied"}, status=403)
 
         image = request.FILES.get("image")
-        if not image:
-            return Response({"error": "No image file provided."}, status=400)
-
-        if image.size > MAX_IMAGE_SIZE:
-            return Response({"error": "Image must be 5MB or smaller."}, status=400)
-
-        content_type = getattr(image, "content_type", "") or ""
-        if content_type not in ALLOWED_IMAGE_TYPES:
-            return Response(
-                {"error": "Allowed types: JPEG, PNG, WebP, GIF."},
-                status=400,
-            )
-
-        ext = os.path.splitext(image.name)[1].lower() or ".jpg"
-        filename = f"posts/content/{uuid.uuid4().hex}{ext}"
-        path = default_storage.save(filename, ContentFile(image.read()))
-        url = default_storage.url(path)
+        try:
+            url = upload_image(image, folder=CONTENT_FOLDER)
+        except (ValueError, ImproperlyConfigured) as exc:
+            return _media_upload_error_response(exc)
 
         return Response({"url": url}, status=201)

@@ -45,6 +45,13 @@ export default function HomeOverview() {
           setCategoryCount(categories.length);
           setTagCount(tags.length);
         }
+      } catch {
+        if (!cancelled) {
+          setQueue([]);
+          setPublishedCount(0);
+          setCategoryCount(0);
+          setTagCount(0);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
