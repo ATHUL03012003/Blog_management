@@ -1,1 +1,6 @@
+__pycache__/
+*.py[cod]
+*$py.class
 .env
+blog_app/media/
+venv/
