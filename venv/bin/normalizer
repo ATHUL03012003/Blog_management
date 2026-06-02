@@ -1,4 +1,4 @@
-#!/home/athulkrishnas/personal/BlogApp/venv/bin/python3
+#!/home/athulkrishna/personal/BlogApp/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys
