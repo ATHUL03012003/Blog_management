@@ -10,6 +10,7 @@ from .views import (
     ApprovePostView,
     RejectPostView,
     ReviewQueueView,
+    AdminAllPostsView,
     MyPostsView,
     UploadPostImageView,
 )
@@ -25,6 +26,8 @@ urlpatterns = [
     path("upload-image/", UploadPostImageView.as_view(), name="upload-post-image"),
 
     path("review-queue/", ReviewQueueView.as_view(), name="review-queue"),
+
+    path("admin/all/", AdminAllPostsView.as_view(), name="admin-all-posts"),
 
     path("<slug:slug>/", PostDetailView.as_view(), name="post-detail"),
 

@@ -87,8 +87,8 @@ export default function RichTextEditor({ value, onChange, disabled = false, labe
     if (!editor || !file) return;
     try {
       const { url } = await uploadContentImage(file);
-      // API returns full Cloudinary HTTPS URL; stored in post HTML, not on disk
-      editor.chain().focus().setImage({ src: mediaUrl(url), alt: file.name }).run();
+      const src = mediaUrl(url);
+      editor.chain().focus().setImage({ src, alt: file.name }).run();
     } catch (err) {
       window.alert(parseApiError(err));
     }

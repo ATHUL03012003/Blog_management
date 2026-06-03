@@ -1,18 +1,62 @@
-import { Typography, Container, Box } from '@mui/material';
-import UserRoleManagement from '../../components/admin/UserRoleManagement';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import ProtectedRoute from '../../components/ProtectedRoute';
+import ReaderLayout from '../../components/reader/ReaderLayout';
+import { ADMIN_ROLE, SUPERADMIN_ROLE } from '../../constants/roles';
+import HomeOverview from './HomeOverview';
+import Users from './Users';
+import AllPosts from './AllPosts';
+import PostDetail from './PostDetail';
+import ReviewQueue from '../editor/ReviewQueue';
+import ReviewPost from '../editor/ReviewPost';
+import CategoriesManage from '../editor/CategoriesManage';
+import Profile from '../Profile';
+import CreatePost from '../editor/CreatePost';
+import EditPost from '../editor/EditPost';
+import { useAdminPaths } from '../../hooks/useAdminPaths';
+
+function AdminCreatePost() {
+  const paths = useAdminPaths();
+  return <CreatePost paths={paths} />;
+}
+
+function AdminEditPost() {
+  const paths = useAdminPaths();
+  return <EditPost paths={paths} />;
+}
+
+function AdminReviewQueue() {
+  const paths = useAdminPaths();
+  return <ReviewQueue paths={paths} />;
+}
+
+function AdminReviewPost() {
+  const paths = useAdminPaths();
+  return <ReviewPost paths={paths} />;
+}
+
+function AdminCategories() {
+  const paths = useAdminPaths();
+  return <CategoriesManage paths={paths} />;
+}
 
 export default function AdminDashboard() {
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 6 }}>
-      <Box sx={{ p: 4, background: 'rgba(30, 41, 59, 0.5)', borderRadius: 3, mb: 1 }}>
-        <Typography variant="h4" gutterBottom>
-          Admin Dashboard
-        </Typography>
-        <Typography color="text.secondary">
-          Manage users, adjust site configurations, and monitor analytics.
-        </Typography>
-      </Box>
-      <UserRoleManagement />
-    </Container>
+    <ProtectedRoute allowedRoles={[ADMIN_ROLE, SUPERADMIN_ROLE]}>
+      <Routes>
+        <Route element={<ReaderLayout />}>
+          <Route index element={<HomeOverview />} />
+          <Route path="users" element={<Users />} />
+          <Route path="posts" element={<AllPosts />} />
+          <Route path="posts/new" element={<AdminCreatePost />} />
+          <Route path="posts/:slug/edit" element={<AdminEditPost />} />
+          <Route path="posts/:slug" element={<PostDetail />} />
+          <Route path="review" element={<AdminReviewQueue />} />
+          <Route path="review/:slug" element={<AdminReviewPost />} />
+          <Route path="categories" element={<AdminCategories />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="*" element={<Navigate to="." replace />} />
+        </Route>
+      </Routes>
+    </ProtectedRoute>
   );
 }

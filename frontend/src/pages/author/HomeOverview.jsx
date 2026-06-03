@@ -30,8 +30,6 @@ export default function HomeOverview() {
       try {
         const data = await fetchMyPosts();
         if (!cancelled) setPosts(data);
-      } catch {
-        if (!cancelled) setPosts([]);
       } finally {
         if (!cancelled) setLoading(false);
       }
