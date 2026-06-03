@@ -28,10 +28,10 @@ import {
   deleteTag,
 } from '../../services/editorCategories';
 import { readerGlassSx } from '../../components/reader/ReaderLayout';
-import { editorPaths } from '../../constants/editorPaths';
+import { editorPaths as defaultEditorPaths } from '../../constants/editorPaths';
 import parseApiError from '../../utils/parseApiError';
 
-export default function CategoriesManage() {
+export default function CategoriesManage({ paths = defaultEditorPaths }) {
   const navigate = useNavigate();
   const [tab, setTab] = useState(0);
   const [categories, setCategories] = useState([]);
@@ -112,7 +112,7 @@ export default function CategoriesManage() {
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-        <IconButton onClick={() => navigate(editorPaths.home)} sx={{ color: '#7dd3fc' }} aria-label="Back">
+        <IconButton onClick={() => navigate(paths.home)} sx={{ color: '#7dd3fc' }} aria-label="Back">
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h5" fontWeight={800}>

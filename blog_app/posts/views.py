@@ -210,6 +210,15 @@ class ReviewQueueView(APIView):
         return Response(serializer.data)
 
 
+class AdminAllPostsView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get(self, request):
+        posts = Post.objects.all().order_by("-created_at")
+        serializer = PostSerializer(posts, many=True)
+        return Response(serializer.data)
+
+
 class MyPostsView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -232,5 +241,4 @@ class UploadPostImageView(APIView):
             url = upload_image(image, folder=CONTENT_FOLDER)
         except (ValueError, ImproperlyConfigured) as exc:
             return _media_upload_error_response(exc)
-
         return Response({"url": url}, status=201)

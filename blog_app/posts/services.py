@@ -7,7 +7,12 @@ from django.utils.text import slugify
 import uuid
 
 from .utils import sanitize_post_html
-from .cloudinary_utils import COVER_FOLDER, upload_image
+from .cloudinary_utils import (
+    COVER_FOLDER,
+    delete_cloudinary_url,
+    extract_image_urls_from_html,
+    upload_image,
+)
 
 
 class PostService:
@@ -43,6 +48,8 @@ class PostService:
     def update_post(post, data):
         image_file = data.pop("image", None)
         if image_file:
+            if post.image:
+                delete_cloudinary_url(post.image)
             post.image = upload_image(image_file, folder=COVER_FOLDER)
         if "title" in data and data["title"] != post.title:
             new_slug = slugify(data["title"]) + "-" + str(uuid.uuid4())[:6]
@@ -64,6 +71,10 @@ class PostService:
 
     @staticmethod
     def delete_post(post):
+        if post.image:
+            delete_cloudinary_url(post.image)
+        for url in extract_image_urls_from_html(post.content):
+            delete_cloudinary_url(url)
         post.delete()
 
     @staticmethod

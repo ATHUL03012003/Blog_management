@@ -33,9 +33,9 @@ import {
   canEditorPublish,
   canDelete,
 } from '../../constants/postStatus';
-import { editorPaths } from '../../constants/editorPaths';
+import { editorPaths as defaultEditorPaths } from '../../constants/editorPaths';
 
-export default function EditPost() {
+export default function EditPost({ paths = defaultEditorPaths }) {
   const { slug } = useParams();
   const navigate = useNavigate();
   const [post, setPost] = useState(null);
@@ -101,7 +101,7 @@ export default function EditPost() {
       setValues((v) => ({ ...v, coverFile: null, coverUrl: updated.image || null }));
       setSuccess('Changes saved.');
       if (updated.slug !== slug) {
-        navigate(editorPaths.editPost(updated.slug), { replace: true });
+        navigate(paths.editPost(updated.slug), { replace: true });
       }
     } catch (err) {
       setError(parseApiError(err));
@@ -129,7 +129,7 @@ export default function EditPost() {
     setActing('delete');
     try {
       await deletePost(slug);
-      navigate(editorPaths.posts);
+      navigate(paths.posts);
     } catch (err) {
       setError(parseApiError(err));
       setActing('');
@@ -164,7 +164,7 @@ export default function EditPost() {
           startIcon={<PublishIcon />}
           disabled={!!acting || saving}
           onClick={() =>
-            runAction('publish', () => publishPost(slug), 'Post published!', editorPaths.post(slug))
+            runAction('publish', () => publishPost(slug), 'Post published!', paths.post(slug))
           }
           sx={{ borderColor: 'rgba(34,197,94,0.5)', color: '#86efac' }}
         >
@@ -185,7 +185,7 @@ export default function EditPost() {
         pageTitle="Edit post"
         status={post.status}
         backButton={
-          <IconButton onClick={() => navigate(editorPaths.post(slug))} sx={{ color: '#7dd3fc' }} aria-label="Back">
+          <IconButton onClick={() => navigate(paths.post(slug))} sx={{ color: '#7dd3fc' }} aria-label="Back">
             <ArrowBackIcon />
           </IconButton>
         }

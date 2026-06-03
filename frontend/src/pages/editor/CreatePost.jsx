@@ -6,9 +6,9 @@ import { useNavigate } from 'react-router-dom';
 import { createPost, getPlainTextFromHtml } from '../../services/authorPosts';
 import PostEditorLayout, { EMPTY_FORM } from '../../components/author/PostEditorLayout';
 import parseApiError from '../../utils/parseApiError';
-import { editorPaths } from '../../constants/editorPaths';
+import { editorPaths as defaultEditorPaths } from '../../constants/editorPaths';
 
-export default function CreatePost() {
+export default function CreatePost({ paths = defaultEditorPaths }) {
   const navigate = useNavigate();
   const [values, setValues] = useState({ ...EMPTY_FORM });
   const [saving, setSaving] = useState(false);
@@ -38,7 +38,7 @@ export default function CreatePost() {
         coverFile: values.coverFile,
       });
       setSuccess('Draft created.');
-      setTimeout(() => navigate(editorPaths.editPost(post.slug)), 600);
+      setTimeout(() => navigate(paths.editPost(post.slug)), 600);
     } catch (err) {
       setError(parseApiError(err));
     } finally {
@@ -51,7 +51,7 @@ export default function CreatePost() {
       <PostEditorLayout
         pageTitle="New post"
         backButton={
-          <IconButton onClick={() => navigate(editorPaths.posts)} sx={{ color: '#7dd3fc' }} aria-label="Back">
+          <IconButton onClick={() => navigate(paths.posts)} sx={{ color: '#7dd3fc' }} aria-label="Back">
             <ArrowBackIcon />
           </IconButton>
         }

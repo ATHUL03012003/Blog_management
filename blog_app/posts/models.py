@@ -14,7 +14,7 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     published_at = models.DateTimeField(null=True, blank=True)
-    # HTTPS URL from Cloudinary (not a local file path or binary in DB)
+    # Cloudinary HTTPS URL only (not a local file path)
     image = models.URLField(max_length=500, blank=True, null=True)
     rejection_reason = models.TextField(blank=True)
     improvement_areas = models.TextField(blank=True)

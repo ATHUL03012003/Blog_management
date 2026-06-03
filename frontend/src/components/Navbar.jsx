@@ -21,6 +21,7 @@ import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
 import { ROLE_MAP } from '../constants/roles';
+import { getAdminNavItems, getAdminBaseFromPath } from '../constants/adminPaths';
 import { useState } from 'react';
 import { BRAND_NAME, LOGO_SRC, authButtonSx } from '../constants/brand';
 
@@ -67,15 +68,29 @@ export default function Navbar() {
   const isReaderArea = location.pathname.startsWith('/reader');
   const isAuthorArea = location.pathname.startsWith('/author');
   const isEditorArea = location.pathname.startsWith('/editor');
-  const isRoleDashboard = isReaderArea || isAuthorArea || isEditorArea;
+  const isAdminArea = location.pathname.startsWith('/admin');
+  const isSuperAdminArea = location.pathname.startsWith('/superadmin');
+  const isAdminDashboard = isAdminArea || isSuperAdminArea;
+  const adminBase = isAdminDashboard ? getAdminBaseFromPath(location.pathname) : '/admin';
+  const isRoleDashboard = isReaderArea || isAuthorArea || isEditorArea || isAdminDashboard;
   const dashboardNav = isReaderArea
     ? READER_NAV_ITEMS
     : isAuthorArea
       ? AUTHOR_NAV_ITEMS
       : isEditorArea
         ? EDITOR_NAV_ITEMS
+      : isAdminDashboard
+        ? getAdminNavItems(adminBase)
         : null;
-  const dashboardHome = isReaderArea ? '/reader' : isAuthorArea ? '/author' : isEditorArea ? '/editor' : '/';
+  const dashboardHome = isReaderArea
+    ? '/reader'
+    : isAuthorArea
+      ? '/author'
+      : isEditorArea
+        ? '/editor'
+        : isAdminDashboard
+          ? adminBase
+          : '/';
 
   const handleMenu = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
@@ -103,6 +118,8 @@ export default function Navbar() {
     if (rolePath === 'reader') navigate('/reader/profile');
     else if (rolePath === 'author') navigate('/author/profile');
     else if (rolePath === 'editor') navigate('/editor/profile');
+    else if (rolePath === 'admin') navigate('/admin/profile');
+    else if (rolePath === 'superadmin') navigate('/superadmin/profile');
     else navigate('/profile');
   };
 

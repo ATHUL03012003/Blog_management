@@ -3,35 +3,20 @@ import { GoogleLogin } from '@react-oauth/google';
 import { Box, Alert } from '@mui/material';
 import { useAuth } from '../hooks/useAuth';
 
-const MIN_WIDTH = 200;
-const MAX_WIDTH = 400;
+const BUTTON_WIDTH = 320;
 
 export default function GoogleLoginButton({ text = 'continue_with', mode = 'login' }) {
   const { loginWithGoogle } = useAuth();
   const [error, setError] = useState('');
-  const [buttonWidth, setButtonWidth] = useState(MAX_WIDTH);
-  const containerRef = useRef(null);
+  const [showButton, setShowButton] = useState(false);
+  const mountedRef = useRef(false);
+
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-
-    const updateWidth = () => {
-      const available = el.getBoundingClientRect().width;
-      const next = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, Math.floor(available)));
-      setButtonWidth(next);
-    };
-
-    updateWidth();
-    const observer = new ResizeObserver(updateWidth);
-    observer.observe(el);
-    window.addEventListener('resize', updateWidth);
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('resize', updateWidth);
-    };
+    if (mountedRef.current) return;
+    mountedRef.current = true;
+    setShowButton(true);
   }, []);
 
   if (!clientId) {
@@ -52,23 +37,13 @@ export default function GoogleLoginButton({ text = 'continue_with', mode = 'logi
 
   return (
     <Box
-      ref={containerRef}
       sx={{
         width: '100%',
         mb: 2,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        overflow: 'hidden',
-        '& > div': {
-          width: '100% !important',
-          maxWidth: '100%',
-          display: 'flex',
-          justifyContent: 'center',
-        },
-        '& iframe': {
-          maxWidth: '100% !important',
-        },
+        minHeight: 44,
       }}
     >
       {error && (
@@ -76,15 +51,17 @@ export default function GoogleLoginButton({ text = 'continue_with', mode = 'logi
           {error}
         </Alert>
       )}
-      <GoogleLogin
-        onSuccess={handleSuccess}
-        onError={() => setError('Google sign-in was cancelled or failed')}
-        theme="filled_black"
-        size="large"
-        width={buttonWidth}
-        text={text}
-        shape="rectangular"
-      />
+      {showButton && (
+        <GoogleLogin
+          onSuccess={handleSuccess}
+          onError={() => setError('Google sign-in was cancelled or failed')}
+          theme="filled_black"
+          size="large"
+          width={BUTTON_WIDTH}
+          text={text}
+          shape="rectangular"
+        />
+      )}
     </Box>
   );
 }
