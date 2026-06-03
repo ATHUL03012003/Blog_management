@@ -21,7 +21,8 @@ import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
 import { ROLE_MAP } from '../constants/roles';
-import { getAdminNavItems, getAdminBaseFromPath } from '../constants/adminPaths';
+import { getAdminNavItems } from '../constants/adminPaths';
+import { SUPERADMIN_NAV_ITEMS } from '../constants/superadminPaths';
 import { useState } from 'react';
 import { BRAND_NAME, LOGO_SRC, authButtonSx } from '../constants/brand';
 
@@ -70,27 +71,29 @@ export default function Navbar() {
   const isEditorArea = location.pathname.startsWith('/editor');
   const isAdminArea = location.pathname.startsWith('/admin');
   const isSuperAdminArea = location.pathname.startsWith('/superadmin');
-  const isAdminDashboard = isAdminArea || isSuperAdminArea;
-  const adminBase = isAdminDashboard ? getAdminBaseFromPath(location.pathname) : '/admin';
-  const isRoleDashboard = isReaderArea || isAuthorArea || isEditorArea || isAdminDashboard;
+  const isRoleDashboard = isReaderArea || isAuthorArea || isEditorArea || isAdminArea || isSuperAdminArea;
   const dashboardNav = isReaderArea
     ? READER_NAV_ITEMS
     : isAuthorArea
       ? AUTHOR_NAV_ITEMS
       : isEditorArea
         ? EDITOR_NAV_ITEMS
-      : isAdminDashboard
-        ? getAdminNavItems(adminBase)
-        : null;
+        : isSuperAdminArea
+          ? SUPERADMIN_NAV_ITEMS
+          : isAdminArea
+            ? getAdminNavItems('/admin')
+            : null;
   const dashboardHome = isReaderArea
     ? '/reader'
     : isAuthorArea
       ? '/author'
       : isEditorArea
         ? '/editor'
-        : isAdminDashboard
-          ? adminBase
-          : '/';
+        : isSuperAdminArea
+          ? '/superadmin'
+          : isAdminArea
+            ? '/admin'
+            : '/';
 
   const handleMenu = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);

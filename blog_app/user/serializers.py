@@ -114,3 +114,14 @@ class UserListSerializer(serializers.ModelSerializer):
 
 class AdminSetRoleSerializer(serializers.Serializer):
     role = serializers.ChoiceField(choices=[UserRole.READER, UserRole.AUTHOR])
+
+
+class SuperAdminSetRoleSerializer(serializers.Serializer):
+    role = serializers.ChoiceField(
+        choices=[
+            UserRole.READER,
+            UserRole.AUTHOR,
+            UserRole.EDITOR,
+            UserRole.ADMIN,
+        ]
+    )
