@@ -10,6 +10,12 @@ from common.enum import UserRole
 User = get_user_model()
 
 ADMIN_MANAGED_ROLES = {UserRole.READER, UserRole.AUTHOR}
+SUPERADMIN_ASSIGNABLE_ROLES = {
+    UserRole.READER,
+    UserRole.AUTHOR,
+    UserRole.EDITOR,
+    UserRole.ADMIN,
+}
 
 
 class UserService:
@@ -118,7 +124,59 @@ class UserService:
         target_user.save()
         return target_user
 
+    @staticmethod
+    def list_all_users(role_filter=None):
+        qs = User.objects.all().order_by("-date_joined")
+        if role_filter is not None:
+            qs = qs.filter(role=role_filter)
+        return qs
 
+    @staticmethod
+    def superadmin_set_user_role(actor, target_user, new_role):
+        if actor.role != UserRole.SUPERADMIN:
+            raise ValidationError("Only Super Admin can change roles here.")
+
+        if new_role == UserRole.SUPERADMIN:
+            raise ValidationError("Super Admin role cannot be assigned via the API.")
+
+        if target_user.role == UserRole.SUPERADMIN:
+            raise ValidationError("Super Admin accounts cannot be modified.")
+
+        if new_role not in SUPERADMIN_ASSIGNABLE_ROLES:
+            raise ValidationError("Invalid role for this action.")
+
+        if target_user.role == new_role:
+            raise ValidationError("User already has this role.")
+
+        target_user.role = new_role
+        target_user.save()
+        return target_user
+
+    @staticmethod
+    def get_platform_overview():
+        from posts.models import Post
+        from common.enum import PostStatus
+
+        users_by_role = {}
+        for role_value, role_label in UserRole.choices:
+            users_by_role[str(role_value)] = {
+                "label": role_label,
+                "count": User.objects.filter(role=role_value).count(),
+            }
+
+        posts_by_status = {}
+        for status_value, status_label in PostStatus.choices:
+            posts_by_status[str(status_value)] = {
+                "label": status_label,
+                "count": Post.objects.filter(status=status_value).count(),
+            }
+
+        return {
+            "total_users": User.objects.count(),
+            "total_posts": Post.objects.count(),
+            "users_by_role": users_by_role,
+            "posts_by_status": posts_by_status,
+        }
 
 
 class GoogleAuthService:

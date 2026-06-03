@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import ReaderLayout from '../../components/reader/ReaderLayout';
-import { ADMIN_ROLE, SUPERADMIN_ROLE } from '../../constants/roles';
+import { ADMIN_ROLE } from '../../constants/roles';
 import HomeOverview from './HomeOverview';
 import Users from './Users';
 import AllPosts from './AllPosts';
@@ -41,7 +41,7 @@ function AdminCategories() {
 
 export default function AdminDashboard() {
   return (
-    <ProtectedRoute allowedRoles={[ADMIN_ROLE, SUPERADMIN_ROLE]}>
+    <ProtectedRoute allowedRoles={[ADMIN_ROLE]}>
       <Routes>
         <Route element={<ReaderLayout />}>
           <Route index element={<HomeOverview />} />

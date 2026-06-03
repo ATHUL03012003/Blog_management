@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.core.exceptions import ValidationError as DjangoValidationError
 from posts.permissions import IsAdmin
+from .permissions import IsSuperAdmin
 from .serializers import (
     RegisterSerializer,
     LoginSerializer,
@@ -11,6 +12,7 @@ from .serializers import (
     ChangePasswordSerializer,
     UserListSerializer,
     AdminSetRoleSerializer,
+    SuperAdminSetRoleSerializer,
 )
 from .services import UserService, GoogleAuthService
 from django.contrib.auth import get_user_model
@@ -151,6 +153,52 @@ class AdminSetUserRoleView(APIView):
 
         try:
             user = UserService.admin_set_user_role(
+                request.user, target, serializer.validated_data["role"]
+            )
+        except DjangoValidationError as exc:
+            msgs = getattr(exc, "messages", None) or [str(exc)]
+            return Response({"error": msgs[0]}, status=400)
+
+        return Response(UserListSerializer(user).data)
+
+
+class SuperAdminOverviewView(APIView):
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
+
+    def get(self, request):
+        return Response(UserService.get_platform_overview())
+
+
+class SuperAdminUserListView(APIView):
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
+
+    def get(self, request):
+        role_param = request.query_params.get("role")
+        role_filter = None
+        if role_param is not None and role_param != "":
+            try:
+                role_filter = int(role_param)
+            except ValueError:
+                return Response({"error": "Invalid role filter."}, status=400)
+        users = UserService.list_all_users(role_filter=role_filter)
+        return Response(UserListSerializer(users, many=True).data)
+
+
+class SuperAdminSetUserRoleView(APIView):
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
+
+    def patch(self, request, user_id):
+        serializer = SuperAdminSetRoleSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
+
+        try:
+            target = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=404)
+
+        try:
+            user = UserService.superadmin_set_user_role(
                 request.user, target, serializer.validated_data["role"]
             )
         except DjangoValidationError as exc:

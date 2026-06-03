@@ -10,7 +10,7 @@ import PostAddIcon from '@mui/icons-material/PostAdd';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useAdminPaths } from '../../hooks/useAdminPaths';
-import { isAdminUser } from '../../constants/roles';
+import { ADMIN_ROLE } from '../../constants/roles';
 import StatCard from '../../components/reader/StatCard';
 import ActionCard from '../../components/reader/ActionCard';
 import { readerGlassSx } from '../../components/reader/ReaderLayout';
@@ -25,7 +25,6 @@ const stagger = { visible: { transition: { staggerChildren: 0.06 } } };
 export default function HomeOverview() {
   const { user } = useAuth();
   const paths = useAdminPaths();
-  const isSuper = user?.role === 5;
   const [stats, setStats] = useState({
     readers: 0,
     authors: 0,
@@ -69,7 +68,7 @@ export default function HomeOverview() {
     return () => { cancelled = true; };
   }, []);
 
-  if (!isAdminUser(user?.role)) return null;
+  if (user?.role !== ADMIN_ROLE) return null;
 
   return (
     <Box component={motion.div} variants={stagger} initial="hidden" animate="visible">
@@ -82,7 +81,7 @@ export default function HomeOverview() {
           fontWeight={800}
           gutterBottom
         >
-          {isSuper ? 'Super Admin' : 'Admin'} — {user?.username}
+          Admin — {user?.username}
         </Typography>
         <Typography color="text.secondary" variant="body1">
           Manage users, moderate all posts, run the review queue, and maintain categories and tags.
