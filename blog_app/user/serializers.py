@@ -138,7 +138,15 @@ class UserListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "username", "email", "role", "role_label", "date_joined"]
+        fields = [
+            "id",
+            "username",
+            "email",
+            "role",
+            "role_label",
+            "is_active",
+            "date_joined",
+        ]
         read_only_fields = fields
 
     def get_role_label(self, obj):
@@ -158,6 +166,10 @@ class SuperAdminSetRoleSerializer(serializers.Serializer):
             UserRole.ADMIN,
         ]
     )
+
+
+class SuperAdminSetUserActiveSerializer(serializers.Serializer):
+    is_active = serializers.BooleanField()
 
 
 class RoleChangeRequestCreateSerializer(serializers.Serializer):

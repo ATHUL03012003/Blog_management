@@ -49,11 +49,22 @@ class UserService:
         user = authenticate(username=identifier, password=password)
         if not user:
             try:
-                user_obj=User.objects.get(email=identifier)
-                user=authenticate(username=user_obj.username, password=password)
+                user_obj = User.objects.get(email=identifier)
+                user = authenticate(username=user_obj.username, password=password)
             except User.DoesNotExist:
                 return None
         return user
+
+    @staticmethod
+    def is_deactivated_login(identifier, password):
+        """True when credentials match an inactive account (authenticate returns None)."""
+        qs = User.objects.filter(username=identifier)
+        if "@" in identifier:
+            qs = User.objects.filter(email=identifier)
+        for candidate in qs:
+            if not candidate.is_active and candidate.check_password(password):
+                return True
+        return False
 
     @staticmethod
     def serialize_user(user):
@@ -153,6 +164,25 @@ class UserService:
         return target_user
 
     @staticmethod
+    def superadmin_set_user_active(actor, target_user, is_active):
+        if actor.role != UserRole.SUPERADMIN:
+            raise ValidationError("Only Super Admin can activate or deactivate users.")
+
+        if target_user.role == UserRole.SUPERADMIN:
+            raise ValidationError("Super Admin accounts cannot be modified.")
+
+        if actor.id == target_user.id:
+            raise ValidationError("You cannot change your own account status.")
+
+        if target_user.is_active == is_active:
+            state = "active" if is_active else "inactive"
+            raise ValidationError(f"User is already {state}.")
+
+        target_user.is_active = is_active
+        target_user.save(update_fields=["is_active"])
+        return target_user
+
+    @staticmethod
     def get_platform_overview():
         from posts.models import Post
         from common.enum import PostStatus
@@ -221,6 +251,8 @@ class GoogleAuthService:
                 user = User.objects.get(email=email)
             except User.DoesNotExist:
                 return None, "not_registered"
+            if not user.is_active:
+                return None, "deactivated"
             return GoogleAuthService._build_auth_response(user), None
 
         user, created = User.objects.get_or_create(

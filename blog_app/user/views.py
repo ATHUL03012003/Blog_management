@@ -13,6 +13,7 @@ from .serializers import (
     UserListSerializer,
     AdminSetRoleSerializer,
     SuperAdminSetRoleSerializer,
+    SuperAdminSetUserActiveSerializer,
     RoleChangeRequestCreateSerializer,
     RoleChangeRequestSerializer,
     RoleChangeRequestReviewSerializer,
@@ -57,6 +58,11 @@ class LoginView(APIView):
         )
 
         if not user:
+            if UserService.is_deactivated_login(
+                serializer.validated_data["identifier"],
+                serializer.validated_data["password"],
+            ):
+                return Response({"error": "This account has been deactivated."}, status=403)
             return Response({"error": "Invalid credentials"}, status=401)
 
         tokens = UserService.generate_tokens(user)
@@ -87,6 +93,9 @@ class GoogleLoginView(APIView):
                 {"error": "No account found with this Google email. Please sign up first."},
                 status=404,
             )
+
+        if error_code == "deactivated":
+            return Response({"error": "This account has been deactivated."}, status=403)
 
         return Response(auth_response, status=200)
 
@@ -206,6 +215,30 @@ class SuperAdminSetUserRoleView(APIView):
         try:
             user = UserService.superadmin_set_user_role(
                 request.user, target, serializer.validated_data["role"]
+            )
+        except DjangoValidationError as exc:
+            msgs = getattr(exc, "messages", None) or [str(exc)]
+            return Response({"error": msgs[0]}, status=400)
+
+        return Response(UserListSerializer(user).data)
+
+
+class SuperAdminSetUserActiveView(APIView):
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
+
+    def patch(self, request, user_id):
+        serializer = SuperAdminSetUserActiveSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
+
+        try:
+            target = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=404)
+
+        try:
+            user = UserService.superadmin_set_user_active(
+                request.user, target, serializer.validated_data["is_active"]
             )
         except DjangoValidationError as exc:
             msgs = getattr(exc, "messages", None) or [str(exc)]
