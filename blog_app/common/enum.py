@@ -15,3 +15,14 @@ class PostStatus(models.IntegerChoices):
     PUBLISHED = 3, "Published"
     REJECTED = 4, "Rejected"
     APPROVED = 5, "Approved"
+
+
+class RoleChangeRequestStatus(models.TextChoices):
+    PENDING = "pending", "Pending"
+    APPROVED = "approved", "Approved"
+    REJECTED = "rejected", "Rejected"
+
+
+class NotificationType(models.TextChoices):
+    ROLE_CHANGE_REQUEST = "role_change_request", "Role change request"
+    ROLE_CHANGE_RESOLVED = "role_change_resolved", "Role change resolved"

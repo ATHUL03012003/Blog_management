@@ -2,6 +2,7 @@ import { Box, Typography, IconButton } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from 'react-router-dom';
 import PlatformUserManagement from '../../components/superadmin/PlatformUserManagement';
+import RoleChangeRequests from '../../components/admin/RoleChangeRequests';
 import { superadminPaths } from '../../constants/superadminPaths';
 
 export default function Users() {
@@ -17,6 +18,7 @@ export default function Users() {
           User management
         </Typography>
       </Box>
+      <RoleChangeRequests />
       <PlatformUserManagement />
     </Box>
   );
