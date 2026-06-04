@@ -10,6 +10,7 @@ from .utils import sanitize_post_html
 from .cloudinary_utils import (
     COVER_FOLDER,
     delete_cloudinary_url,
+    ensure_cloudinary_image_url,
     extract_image_urls_from_html,
     upload_image,
 )
@@ -42,15 +43,26 @@ class PostService:
 
     @staticmethod
     def get_post_by_slug(slug):
-        return get_object_or_404(Post, slug=slug)
+        post = get_object_or_404(Post, slug=slug)
+        PostService._migrate_legacy_cover_if_needed(post)
+        return post
+
+    @staticmethod
+    def _migrate_legacy_cover_if_needed(post):
+        migrated = ensure_cloudinary_image_url(post.image, folder=COVER_FOLDER)
+        if migrated and migrated != post.image:
+            post.image = migrated
+            post.save(update_fields=["image", "updated_at"])
 
     @staticmethod
     def update_post(post, data):
         image_file = data.pop("image", None)
         if image_file:
             if post.image:
-                delete_cloudinary_url(post.image)
+                delete_cloudinary_url(post.image, exclude_post_id=post.id)
             post.image = upload_image(image_file, folder=COVER_FOLDER)
+        else:
+            PostService._migrate_legacy_cover_if_needed(post)
         if "title" in data and data["title"] != post.title:
             new_slug = slugify(data["title"]) + "-" + str(uuid.uuid4())[:6]
             post.slug = new_slug
@@ -71,10 +83,11 @@ class PostService:
 
     @staticmethod
     def delete_post(post):
+        post_id = post.id
         if post.image:
-            delete_cloudinary_url(post.image)
+            delete_cloudinary_url(post.image, exclude_post_id=post_id)
         for url in extract_image_urls_from_html(post.content):
-            delete_cloudinary_url(url)
+            delete_cloudinary_url(url, exclude_post_id=post_id)
         post.delete()
 
     @staticmethod
