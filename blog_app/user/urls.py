@@ -10,6 +10,15 @@ from .views import (
     SuperAdminOverviewView,
     SuperAdminUserListView,
     SuperAdminSetUserRoleView,
+    SuperAdminSetUserActiveView,
+    RoleChangeRequestCreateView,
+    MyRoleChangeRequestsView,
+    PendingRoleChangeRequestsView,
+    RoleChangeRequestReviewView,
+    NotificationListView,
+    NotificationUnreadCountView,
+    NotificationMarkReadView,
+    NotificationMarkAllReadView,
 )
 
 urlpatterns = [
@@ -26,5 +35,38 @@ urlpatterns = [
         "superadmin/users/<int:user_id>/role/",
         SuperAdminSetUserRoleView.as_view(),
         name="superadmin-set-user-role",
+    ),
+    path(
+        "superadmin/users/<int:user_id>/active/",
+        SuperAdminSetUserActiveView.as_view(),
+        name="superadmin-set-user-active",
+    ),
+    path("role-requests/", RoleChangeRequestCreateView.as_view(), name="role-request-create"),
+    path("role-requests/mine/", MyRoleChangeRequestsView.as_view(), name="role-requests-mine"),
+    path(
+        "role-requests/pending/",
+        PendingRoleChangeRequestsView.as_view(),
+        name="role-requests-pending",
+    ),
+    path(
+        "role-requests/<int:request_id>/review/",
+        RoleChangeRequestReviewView.as_view(),
+        name="role-request-review",
+    ),
+    path("notifications/", NotificationListView.as_view(), name="notifications"),
+    path(
+        "notifications/unread-count/",
+        NotificationUnreadCountView.as_view(),
+        name="notifications-unread-count",
+    ),
+    path(
+        "notifications/<int:notification_id>/read/",
+        NotificationMarkReadView.as_view(),
+        name="notification-mark-read",
+    ),
+    path(
+        "notifications/mark-all-read/",
+        NotificationMarkAllReadView.as_view(),
+        name="notifications-mark-all-read",
     ),
 ]

@@ -20,7 +20,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
-import { ROLE_MAP } from '../constants/roles';
+import { ROLE_MAP, isAdminUser } from '../constants/roles';
+import NotificationBell from './NotificationBell';
 import { getAdminNavItems } from '../constants/adminPaths';
 import { SUPERADMIN_NAV_ITEMS } from '../constants/superadminPaths';
 import { useState } from 'react';
@@ -286,6 +287,9 @@ export default function Navbar() {
                     >
                       <MenuIcon />
                     </IconButton>
+                  )}
+                  {isRoleDashboard && (isAdminUser(user?.role) || isReaderArea || isAuthorArea || isEditorArea) && (
+                    <NotificationBell />
                   )}
                   <IconButton onClick={handleMenu} sx={{ p: 0 }} aria-label="Account menu">
                     <Avatar sx={{ bgcolor: 'primary.main', width: 40, height: 40 }}>

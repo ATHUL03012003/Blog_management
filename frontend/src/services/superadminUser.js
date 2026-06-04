@@ -15,3 +15,10 @@ export async function superadminSetUserRole(userId, role) {
   const { data } = await api.patch(`/api/auth/superadmin/users/${userId}/role/`, { role });
   return data;
 }
+
+export async function superadminSetUserActive(userId, isActive) {
+  const { data } = await api.patch(`/api/auth/superadmin/users/${userId}/active/`, {
+    is_active: isActive,
+  });
+  return data;
+}

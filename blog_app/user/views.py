@@ -13,8 +13,15 @@ from .serializers import (
     UserListSerializer,
     AdminSetRoleSerializer,
     SuperAdminSetRoleSerializer,
+    SuperAdminSetUserActiveSerializer,
+    RoleChangeRequestCreateSerializer,
+    RoleChangeRequestSerializer,
+    RoleChangeRequestReviewSerializer,
+    NotificationSerializer,
 )
 from .services import UserService, GoogleAuthService
+from .role_request_service import RoleChangeRequestService, NotificationService
+from .models import RoleChangeRequest
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -51,6 +58,11 @@ class LoginView(APIView):
         )
 
         if not user:
+            if UserService.is_deactivated_login(
+                serializer.validated_data["identifier"],
+                serializer.validated_data["password"],
+            ):
+                return Response({"error": "This account has been deactivated."}, status=403)
             return Response({"error": "Invalid credentials"}, status=401)
 
         tokens = UserService.generate_tokens(user)
@@ -81,6 +93,9 @@ class GoogleLoginView(APIView):
                 {"error": "No account found with this Google email. Please sign up first."},
                 status=404,
             )
+
+        if error_code == "deactivated":
+            return Response({"error": "This account has been deactivated."}, status=403)
 
         return Response(auth_response, status=200)
 
@@ -206,3 +221,134 @@ class SuperAdminSetUserRoleView(APIView):
             return Response({"error": msgs[0]}, status=400)
 
         return Response(UserListSerializer(user).data)
+
+
+class SuperAdminSetUserActiveView(APIView):
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
+
+    def patch(self, request, user_id):
+        serializer = SuperAdminSetUserActiveSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
+
+        try:
+            target = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=404)
+
+        try:
+            user = UserService.superadmin_set_user_active(
+                request.user, target, serializer.validated_data["is_active"]
+            )
+        except DjangoValidationError as exc:
+            msgs = getattr(exc, "messages", None) or [str(exc)]
+            return Response({"error": msgs[0]}, status=400)
+
+        return Response(UserListSerializer(user).data)
+
+
+class RoleChangeRequestCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = RoleChangeRequestCreateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
+        try:
+            req = RoleChangeRequestService.create_request(
+                request.user,
+                serializer.validated_data["requested_role"],
+                serializer.validated_data.get("message", ""),
+            )
+        except DjangoValidationError as exc:
+            msgs = getattr(exc, "messages", None) or [str(exc)]
+            return Response({"error": msgs[0]}, status=400)
+        return Response(RoleChangeRequestSerializer(req).data, status=201)
+
+
+class MyRoleChangeRequestsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        qs = RoleChangeRequestService.list_for_user(request.user)
+        return Response(RoleChangeRequestSerializer(qs, many=True).data)
+
+
+class PendingRoleChangeRequestsView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get(self, request):
+        try:
+            qs = RoleChangeRequestService.list_pending_for_reviewer(request.user)
+        except DjangoValidationError as exc:
+            msgs = getattr(exc, "messages", None) or [str(exc)]
+            return Response({"error": msgs[0]}, status=400)
+        return Response(RoleChangeRequestSerializer(qs, many=True).data)
+
+
+class RoleChangeRequestReviewView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def patch(self, request, request_id):
+        serializer = RoleChangeRequestReviewSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
+
+        try:
+            req_obj = RoleChangeRequest.objects.select_related("user").get(pk=request_id)
+        except RoleChangeRequest.DoesNotExist:
+            return Response({"error": "Request not found."}, status=404)
+
+        action = serializer.validated_data["action"]
+        note = serializer.validated_data.get("review_note", "")
+
+        try:
+            if action == "approve":
+                req_obj = RoleChangeRequestService.approve_request(
+                    request.user, req_obj, note
+                )
+            else:
+                req_obj = RoleChangeRequestService.reject_request(
+                    request.user, req_obj, note
+                )
+        except DjangoValidationError as exc:
+            msgs = getattr(exc, "messages", None) or [str(exc)]
+            return Response({"error": msgs[0]}, status=400)
+
+        return Response(RoleChangeRequestSerializer(req_obj).data)
+
+
+class NotificationListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        unread_only = request.query_params.get("unread") == "1"
+        qs = NotificationService.list_for_user(request.user, unread_only=unread_only)
+        return Response(NotificationSerializer(qs, many=True).data)
+
+
+class NotificationUnreadCountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response({"count": NotificationService.unread_count(request.user)})
+
+
+class NotificationMarkReadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, notification_id):
+        try:
+            notification = NotificationService.mark_read(request.user, notification_id)
+        except DjangoValidationError as exc:
+            msgs = getattr(exc, "messages", None) or [str(exc)]
+            return Response({"error": msgs[0]}, status=400)
+        return Response(NotificationSerializer(notification).data)
+
+
+class NotificationMarkAllReadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        NotificationService.mark_all_read(request.user)
+        return Response({"message": "All notifications marked as read."})

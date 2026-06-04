@@ -23,10 +23,11 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { fetchAllUsers, superadminSetUserRole } from '../../services/superadminUser';
+import { fetchAllUsers, superadminSetUserRole, superadminSetUserActive } from '../../services/superadminUser';
 import { ROLE_LABELS } from '../../constants/roles';
 import { readerGlassSx } from '../reader/ReaderLayout';
 import parseApiError from '../../utils/parseApiError';
+import { useAuth } from '../../hooks/useAuth';
 
 const ROLE_TABS = [
   { key: 'all', label: 'All', filter: null },
@@ -48,14 +49,33 @@ function parseApiErrorLocal(err) {
   return err.response?.data?.error || parseApiError(err) || 'Action failed.';
 }
 
-function UserCard({ user, actingId, onRoleChange }) {
-  const isSuper = user.role === 5;
+function StatusChip({ isActive }) {
   return (
-    <Card sx={{ ...readerGlassSx, mb: 1.5 }}>
+    <Chip
+      size="small"
+      label={isActive ? 'Active' : 'Inactive'}
+      sx={{
+        bgcolor: isActive ? 'rgba(52,211,153,0.15)' : 'rgba(248,113,113,0.15)',
+        color: isActive ? '#6ee7b7' : '#fca5a5',
+      }}
+    />
+  );
+}
+
+function UserCard({ user, actingId, currentUserId, onRoleChange, onToggleActive }) {
+  const isSuper = user.role === 5;
+  const isSelf = user.id === currentUserId;
+  const canToggleActive = !isSuper && !isSelf;
+
+  return (
+    <Card sx={{ ...readerGlassSx, mb: 1.5, opacity: user.is_active === false ? 0.75 : 1 }}>
       <CardContent sx={{ '&:last-child': { pb: 2 } }}>
-        <Typography fontWeight={700} sx={{ color: '#f0f9ff' }}>
-          {user.username}
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1, mb: 1 }}>
+          <Typography fontWeight={700} sx={{ color: '#f0f9ff' }}>
+            {user.username}
+          </Typography>
+          <StatusChip isActive={user.is_active !== false} />
+        </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
           {user.email}
         </Typography>
@@ -69,21 +89,40 @@ function UserCard({ user, actingId, onRoleChange }) {
             Super Admin (protected)
           </Typography>
         ) : (
-          <FormControl fullWidth size="small">
-            <InputLabel>Change role</InputLabel>
-            <Select
-              label="Change role"
-              value={user.role}
-              disabled={actingId === user.id}
-              onChange={(e) => onRoleChange(user.id, Number(e.target.value))}
-            >
-              {ASSIGNABLE.map((r) => (
-                <MenuItem key={r.value} value={r.value}>
-                  {r.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <>
+            <FormControl fullWidth size="small" sx={{ mb: 1.5 }}>
+              <InputLabel>Change role</InputLabel>
+              <Select
+                label="Change role"
+                value={user.role}
+                disabled={actingId === user.id || user.is_active === false}
+                onChange={(e) => onRoleChange(user.id, Number(e.target.value))}
+              >
+                {ASSIGNABLE.map((r) => (
+                  <MenuItem key={r.value} value={r.value}>
+                    {r.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            {canToggleActive && (
+              <Button
+                fullWidth
+                size="small"
+                variant="outlined"
+                color={user.is_active === false ? 'success' : 'error'}
+                disabled={actingId === user.id}
+                onClick={() => onToggleActive(user.id, user.is_active === false)}
+              >
+                {user.is_active === false ? 'Activate' : 'Deactivate'}
+              </Button>
+            )}
+            {isSelf && (
+              <Typography variant="caption" color="text.secondary">
+                Your account cannot be deactivated here.
+              </Typography>
+            )}
+          </>
         )}
       </CardContent>
     </Card>
@@ -91,6 +130,7 @@ function UserCard({ user, actingId, onRoleChange }) {
 }
 
 export default function PlatformUserManagement() {
+  const { user: currentUser } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [tab, setTab] = useState(0);
@@ -123,6 +163,19 @@ export default function PlatformUserManagement() {
     try {
       await superadminSetUserRole(userId, newRole);
       setMsg({ type: 'success', text: 'Role updated.' });
+      await loadUsers();
+    } catch (err) {
+      setMsg({ type: 'error', text: parseApiErrorLocal(err) });
+    } finally {
+      setActingId(null);
+    }
+  };
+
+  const handleToggleActive = async (userId, activate) => {
+    setActingId(userId);
+    try {
+      await superadminSetUserActive(userId, activate);
+      setMsg({ type: 'success', text: activate ? 'User activated.' : 'User deactivated.' });
       await loadUsers();
     } catch (err) {
       setMsg({ type: 'error', text: parseApiErrorLocal(err) });
@@ -165,7 +218,14 @@ export default function PlatformUserManagement() {
       ) : isMobile ? (
         <Box>
           {users.map((u) => (
-            <UserCard key={u.id} user={u} actingId={actingId} onRoleChange={handleRoleChange} />
+            <UserCard
+              key={u.id}
+              user={u}
+              actingId={actingId}
+              currentUserId={currentUser?.id}
+              onRoleChange={handleRoleChange}
+              onToggleActive={handleToggleActive}
+            />
           ))}
         </Box>
       ) : (
@@ -176,50 +236,76 @@ export default function PlatformUserManagement() {
                 <TableCell sx={{ color: '#94a3b8', borderColor: 'rgba(167,139,250,0.12)' }}>User</TableCell>
                 <TableCell sx={{ color: '#94a3b8', borderColor: 'rgba(167,139,250,0.12)' }}>Email</TableCell>
                 <TableCell sx={{ color: '#94a3b8', borderColor: 'rgba(167,139,250,0.12)' }}>Role</TableCell>
+                <TableCell sx={{ color: '#94a3b8', borderColor: 'rgba(167,139,250,0.12)' }}>Status</TableCell>
                 <TableCell sx={{ color: '#94a3b8', borderColor: 'rgba(167,139,250,0.12)' }}>Joined</TableCell>
                 <TableCell align="right" sx={{ color: '#94a3b8', borderColor: 'rgba(167,139,250,0.12)' }}>
-                  Set role
+                  Actions
                 </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {users.map((u) => (
-                <TableRow key={u.id}>
-                  <TableCell sx={{ color: '#e0f2fe', borderColor: 'rgba(167,139,250,0.08)' }}>{u.username}</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', borderColor: 'rgba(167,139,250,0.08)' }}>{u.email}</TableCell>
-                  <TableCell sx={{ borderColor: 'rgba(167,139,250,0.08)' }}>
-                    <Chip
-                      size="small"
-                      label={u.role_label}
-                      sx={{ bgcolor: 'rgba(167,139,250,0.12)', color: '#c4b5fd' }}
-                    />
-                  </TableCell>
-                  <TableCell sx={{ color: 'text.secondary', borderColor: 'rgba(167,139,250,0.08)' }}>
-                    {new Date(u.date_joined).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell align="right" sx={{ borderColor: 'rgba(167,139,250,0.08)' }}>
-                    {u.role === 5 ? (
-                      <Typography variant="caption" color="text.secondary">
-                        Protected
-                      </Typography>
-                    ) : (
-                      <FormControl size="small" sx={{ minWidth: 120 }}>
-                        <Select
-                          value={u.role}
-                          disabled={actingId === u.id}
-                          onChange={(e) => handleRoleChange(u.id, Number(e.target.value))}
-                        >
-                          {ASSIGNABLE.map((r) => (
-                            <MenuItem key={r.value} value={r.value}>
-                              {r.label}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
+              {users.map((u) => {
+                const isSuper = u.role === 5;
+                const isSelf = u.id === currentUser?.id;
+                const canToggleActive = !isSuper && !isSelf;
+
+                return (
+                  <TableRow
+                    key={u.id}
+                    sx={{ opacity: u.is_active === false ? 0.7 : 1 }}
+                  >
+                    <TableCell sx={{ color: '#e0f2fe', borderColor: 'rgba(167,139,250,0.08)' }}>{u.username}</TableCell>
+                    <TableCell sx={{ color: 'text.secondary', borderColor: 'rgba(167,139,250,0.08)' }}>{u.email}</TableCell>
+                    <TableCell sx={{ borderColor: 'rgba(167,139,250,0.08)' }}>
+                      <Chip
+                        size="small"
+                        label={u.role_label}
+                        sx={{ bgcolor: 'rgba(167,139,250,0.12)', color: '#c4b5fd' }}
+                      />
+                    </TableCell>
+                    <TableCell sx={{ borderColor: 'rgba(167,139,250,0.08)' }}>
+                      <StatusChip isActive={u.is_active !== false} />
+                    </TableCell>
+                    <TableCell sx={{ color: 'text.secondary', borderColor: 'rgba(167,139,250,0.08)' }}>
+                      {new Date(u.date_joined).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell align="right" sx={{ borderColor: 'rgba(167,139,250,0.08)' }}>
+                      {isSuper ? (
+                        <Typography variant="caption" color="text.secondary">
+                          Protected
+                        </Typography>
+                      ) : (
+                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                          <FormControl size="small" sx={{ minWidth: 120 }}>
+                            <Select
+                              value={u.role}
+                              disabled={actingId === u.id || u.is_active === false}
+                              onChange={(e) => handleRoleChange(u.id, Number(e.target.value))}
+                            >
+                              {ASSIGNABLE.map((r) => (
+                                <MenuItem key={r.value} value={r.value}>
+                                  {r.label}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                          {canToggleActive && (
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              color={u.is_active === false ? 'success' : 'error'}
+                              disabled={actingId === u.id}
+                              onClick={() => handleToggleActive(u.id, u.is_active === false)}
+                            >
+                              {u.is_active === false ? 'Activate' : 'Deactivate'}
+                            </Button>
+                          )}
+                        </Box>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </TableContainer>

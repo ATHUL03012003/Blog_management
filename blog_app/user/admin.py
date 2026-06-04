@@ -1,5 +1,7 @@
 from django.contrib import admin
 
-# Register your models here.
-from .models import User
+from .models import User, RoleChangeRequest, Notification
+
 admin.site.register(User)
+admin.site.register(RoleChangeRequest)
+admin.site.register(Notification)

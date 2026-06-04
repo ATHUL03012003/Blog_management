@@ -12,6 +12,10 @@ import {
   DialogActions,
   IconButton,
   Skeleton,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LockIcon from '@mui/icons-material/Lock';
@@ -23,6 +27,7 @@ import { useAuth } from '../hooks/useAuth';
 import { readerGlassSx } from '../components/reader/ReaderLayout';
 import { glassCardSx } from '../components/AuthPageLayout';
 import { fetchProfile, updateProfile, changePassword } from '../services/user';
+import { createRoleChangeRequest } from '../services/roleRequests';
 import { ROLE_LABELS, READER_ROLE, ROLE_MAP } from '../constants/roles';
 
 const sectionMotion = {
@@ -66,6 +71,11 @@ export default function Profile() {
   const [passwordMsg, setPasswordMsg] = useState({ type: '', text: '' });
   const [passwordSaving, setPasswordSaving] = useState(false);
 
+  const [requestedRole, setRequestedRole] = useState('');
+  const [roleMessage, setRoleMessage] = useState('');
+  const [roleReqMsg, setRoleReqMsg] = useState({ type: '', text: '' });
+  const [roleReqSaving, setRoleReqSaving] = useState(false);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -98,6 +108,38 @@ export default function Profile() {
       setProfileMsg({ type: 'error', text: parseApiError(err) });
     } finally {
       setProfileSaving(false);
+    }
+  };
+
+  const reloadProfile = async () => {
+    const data = await fetchProfile();
+    setProfile(data);
+    setUsername(data.username);
+    setEmail(data.email);
+    return data;
+  };
+
+  const handleRoleRequestSubmit = async (e) => {
+    e.preventDefault();
+    if (!requestedRole && requestedRole !== 0) return;
+    setRoleReqSaving(true);
+    setRoleReqMsg({ type: '', text: '' });
+    try {
+      await createRoleChangeRequest({
+        requested_role: Number(requestedRole),
+        message: roleMessage.trim(),
+      });
+      await reloadProfile();
+      setRequestedRole('');
+      setRoleMessage('');
+      setRoleReqMsg({
+        type: 'success',
+        text: 'Role change request submitted. An administrator will review it.',
+      });
+    } catch (err) {
+      setRoleReqMsg({ type: 'error', text: parseApiError(err) });
+    } finally {
+      setRoleReqSaving(false);
     }
   };
 
@@ -226,22 +268,61 @@ export default function Profile() {
                   Role
                 </Typography>
               </Box>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 You are a <strong>{profile?.role_label || ROLE_LABELS[profile?.role]}</strong>.
-                {isReader && (
-                  <>
-                    {' '}
-                    To write and publish posts, an admin or super admin must promote you to Author. You cannot change
-                    your role yourself.
-                  </>
-                )}
-                {!isReader && profile?.role === 2 && (
-                  <> Your author access was granted by an administrator.</>
-                )}
-                {profile?.role !== undefined && profile.role !== READER_ROLE && profile.role !== 2 && (
-                  <> Your role is assigned and managed by an administrator.</>
-                )}
+                Role changes require approval from an administrator.
               </Typography>
+
+              {profile?.pending_role_request ? (
+                <Alert severity="info" sx={{ mb: 2 }}>
+                  Pending request: {profile.pending_role_request.current_role_label} →{' '}
+                  {profile.pending_role_request.requested_role_label} (submitted{' '}
+                  {new Date(profile.pending_role_request.created_at).toLocaleDateString()}).
+                </Alert>
+              ) : profile?.requestable_roles?.length > 0 ? (
+                <>
+                  {roleReqMsg.text && (
+                    <Alert severity={roleReqMsg.type} sx={{ mb: 2 }}>
+                      {roleReqMsg.text}
+                    </Alert>
+                  )}
+                  <form onSubmit={handleRoleRequestSubmit}>
+                    <FormControl fullWidth margin="normal" required>
+                      <InputLabel>Requested role</InputLabel>
+                      <Select
+                        label="Requested role"
+                        value={requestedRole}
+                        onChange={(e) => setRequestedRole(e.target.value)}
+                      >
+                        {profile.requestable_roles.map((r) => (
+                          <MenuItem key={r.value} value={r.value}>
+                            {r.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    <TextField
+                      fullWidth
+                      label="Message (optional)"
+                      multiline
+                      minRows={2}
+                      value={roleMessage}
+                      onChange={(e) => setRoleMessage(e.target.value)}
+                      margin="normal"
+                      placeholder="Why you are requesting this role change"
+                    />
+                    <Button type="submit" variant="contained" disabled={roleReqSaving} sx={{ mt: 1 }}>
+                      {roleReqSaving ? 'Submitting…' : 'Request role change'}
+                    </Button>
+                  </form>
+                </>
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  {isReader
+                    ? 'To become an Author, submit a request above when available, or contact an administrator.'
+                    : 'Your role cannot be changed through self-service requests.'}
+                </Typography>
+              )}
             </Box>
           </>
         )}
