@@ -8,6 +8,9 @@ class PostSerializer(serializers.ModelSerializer):
     category_detail = CategorySerializer(source="category", read_only=True)
     tags_detail = TagSerializer(source="tags", many=True, read_only=True)
     author_username = serializers.SerializerMethodField()
+    like_count = serializers.SerializerMethodField()
+    comment_count = serializers.SerializerMethodField()
+    is_liked = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
@@ -25,6 +28,10 @@ class PostSerializer(serializers.ModelSerializer):
             "tags",
             "category_detail",
             "tags_detail",
+            "like_count",
+            "comment_count",
+            "is_liked",
+            "comments_enabled",
             "created_at",
             "updated_at",
             "published_at",
@@ -44,6 +51,24 @@ class PostSerializer(serializers.ModelSerializer):
 
     def get_author_username(self, obj):
         return obj.author.username if obj.author_id else None
+
+    def get_like_count(self, obj):
+        if hasattr(obj, "like_count"):
+            return obj.like_count
+        return obj.likes.count()
+
+    def get_comment_count(self, obj):
+        if hasattr(obj, "comment_count"):
+            return obj.comment_count
+        return obj.comments.count()
+
+    def get_is_liked(self, obj):
+        if hasattr(obj, "is_liked"):
+            return obj.is_liked
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return False
+        return obj.likes.filter(user=request.user).exists()
 
 
 class PostWriteSerializer(serializers.ModelSerializer):

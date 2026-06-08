@@ -56,15 +56,33 @@ class UserService:
         return user
 
     @staticmethod
-    def is_deactivated_login(identifier, password):
-        """True when credentials match an inactive account (authenticate returns None)."""
+    def get_deactivated_user(identifier, password):
         qs = User.objects.filter(username=identifier)
         if "@" in identifier:
             qs = User.objects.filter(email=identifier)
         for candidate in qs:
             if not candidate.is_active and candidate.check_password(password):
-                return True
-        return False
+                return candidate
+        return None
+
+    @staticmethod
+    def is_deactivated_login(identifier, password):
+        """True when credentials match an inactive account (authenticate returns None)."""
+        return UserService.get_deactivated_user(identifier, password) is not None
+
+    @staticmethod
+    def reactivate_after_comment_suspension(identifier, password):
+        user = UserService.authenticate_user(identifier, password)
+        if not user:
+            deactivated = UserService.get_deactivated_user(identifier, password)
+            if not deactivated:
+                raise ValidationError("Invalid credentials.")
+            user = deactivated
+
+        from comments.moderation_service import CommentModerationService
+
+        CommentModerationService.reactivate_after_suspension(user)
+        return user
 
     @staticmethod
     def serialize_user(user):

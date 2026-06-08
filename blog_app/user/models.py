@@ -13,6 +13,8 @@ class User(AbstractUser):
     )
     is_verified = models.BooleanField(default=False)
     email = models.EmailField(unique=True)
+    comment_warning_count = models.PositiveSmallIntegerField(default=0)
+    comment_suspended_until = models.DateTimeField(null=True, blank=True)
     objects = UserManager()
     USERNAME_FIELD = 'username'           # ✅ Login with username
     REQUIRED_FIELDS = ['email']
