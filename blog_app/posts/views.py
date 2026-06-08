@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 from common.enum import UserRole
+from comments.engagement import annotate_post_engagement
 from .permissions import IsAuthor, IsEditor, IsAdmin
 from .serializers import PostSerializer, PostWriteSerializer, RejectPostSerializer
 from .services import PostService
@@ -49,20 +50,23 @@ class CreatePostView(APIView):
             post = PostService.create_post(request.user, serializer.validated_data)
         except (ValueError, ImproperlyConfigured) as exc:
             return _media_upload_error_response(exc)
-        return Response(PostSerializer(post).data, status=201)
+        return Response(
+            PostSerializer(post, context={"request": request}).data,
+            status=201,
+        )
 
 
 class PostListView(APIView):
     def get(self, request):
-        posts = PostService.get_all_posts()
-        serializer = PostSerializer(posts, many=True)
+        posts = PostService.get_all_posts(user=request.user)
+        serializer = PostSerializer(posts, many=True, context={"request": request})
         return Response(serializer.data)
 
 
 class PostDetailView(APIView):
     def get(self, request, slug):
-        post = PostService.get_post_by_slug(slug)
-        serializer = PostSerializer(post)
+        post = PostService.get_post_by_slug(slug, user=request.user)
+        serializer = PostSerializer(post, context={"request": request})
         return Response(serializer.data)
 
 
@@ -84,7 +88,7 @@ class UpdatePostView(APIView):
             post = PostService.update_post(post, serializer.validated_data)
         except (ValueError, ImproperlyConfigured) as exc:
             return _media_upload_error_response(exc)
-        return Response(PostSerializer(post).data)
+        return Response(PostSerializer(post, context={"request": request}).data)
 
 
 class DeletePostView(APIView):
@@ -145,7 +149,7 @@ class PublishPostView(APIView):
             )
 
         post = PostService.publish_post(post)
-        return Response(PostSerializer(post).data)
+        return Response(PostSerializer(post, context={"request": request}).data)
 
 
 class SubmitForReviewView(APIView):
@@ -164,7 +168,7 @@ class SubmitForReviewView(APIView):
             )
 
         post = PostService.submit_for_review(post)
-        return Response(PostSerializer(post).data)
+        return Response(PostSerializer(post, context={"request": request}).data)
 
 
 class ApprovePostView(APIView):
@@ -177,7 +181,7 @@ class ApprovePostView(APIView):
             return Response({"error": "Only posts in review can be approved"}, status=400)
 
         post = PostService.approve_post(post)
-        return Response(PostSerializer(post).data)
+        return Response(PostSerializer(post, context={"request": request}).data)
 
 
 class RejectPostView(APIView):
@@ -198,15 +202,18 @@ class RejectPostView(APIView):
             rejection_reason=serializer.validated_data["rejection_reason"],
             improvement_areas=serializer.validated_data["improvement_areas"],
         )
-        return Response(PostSerializer(post).data)
+        return Response(PostSerializer(post, context={"request": request}).data)
 
 
 class ReviewQueueView(APIView):
     permission_classes = [IsAuthenticated, IsEditor | IsAdmin]
 
     def get(self, request):
-        posts = Post.objects.filter(status=PostStatus.REVIEW).order_by("-created_at")
-        serializer = PostSerializer(posts, many=True)
+        posts = annotate_post_engagement(
+            Post.objects.filter(status=PostStatus.REVIEW).order_by("-created_at"),
+            request.user,
+        )
+        serializer = PostSerializer(posts, many=True, context={"request": request})
         return Response(serializer.data)
 
 
@@ -214,8 +221,11 @@ class AdminAllPostsView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
     def get(self, request):
-        posts = Post.objects.all().order_by("-created_at")
-        serializer = PostSerializer(posts, many=True)
+        posts = annotate_post_engagement(
+            Post.objects.all().order_by("-created_at"),
+            request.user,
+        )
+        serializer = PostSerializer(posts, many=True, context={"request": request})
         return Response(serializer.data)
 
 
@@ -223,8 +233,11 @@ class MyPostsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        posts = Post.objects.filter(author=request.user).order_by("-created_at")
-        serializer = PostSerializer(posts, many=True)
+        posts = annotate_post_engagement(
+            Post.objects.filter(author=request.user).order_by("-created_at"),
+            request.user,
+        )
+        serializer = PostSerializer(posts, many=True, context={"request": request})
         return Response(serializer.data)
 
 

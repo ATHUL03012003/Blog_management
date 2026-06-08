@@ -58,16 +58,55 @@ class LoginView(APIView):
         )
 
         if not user:
-            if UserService.is_deactivated_login(
+            deactivated = UserService.get_deactivated_user(
                 serializer.validated_data["identifier"],
                 serializer.validated_data["password"],
-            ):
-                return Response({"error": "This account has been deactivated."}, status=403)
+            )
+            if deactivated:
+                from comments.moderation_service import CommentModerationService
+
+                return Response(
+                    {
+                        "error": CommentModerationService.get_suspension_login_message(
+                            deactivated
+                        )
+                    },
+                    status=403,
+                )
             return Response({"error": "Invalid credentials"}, status=401)
 
         tokens = UserService.generate_tokens(user)
 
         return Response(tokens, status=200)
+
+
+class ReactivateAfterSuspensionView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
+
+        try:
+            user = UserService.reactivate_after_comment_suspension(
+                serializer.validated_data["identifier"],
+                serializer.validated_data["password"],
+            )
+        except DjangoValidationError as exc:
+            messages = getattr(exc, "messages", [str(exc)])
+            return Response({"error": messages[0]}, status=403)
+
+        tokens = UserService.generate_tokens(user)
+        return Response(
+            {
+                **tokens,
+                "message": "Account reactivated successfully.",
+            },
+            status=200,
+        )
+
 
 class GoogleLoginView(APIView):
     authentication_classes = []

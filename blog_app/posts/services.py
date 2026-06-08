@@ -14,6 +14,7 @@ from .cloudinary_utils import (
     extract_image_urls_from_html,
     upload_image,
 )
+from comments.engagement import annotate_post_engagement
 
 
 class PostService:
@@ -38,12 +39,14 @@ class PostService:
         return post
 
     @staticmethod
-    def get_all_posts():
-        return Post.objects.filter(status=PostStatus.PUBLISHED)
+    def get_all_posts(user=None):
+        queryset = Post.objects.filter(status=PostStatus.PUBLISHED)
+        return annotate_post_engagement(queryset, user)
 
     @staticmethod
-    def get_post_by_slug(slug):
-        post = get_object_or_404(Post, slug=slug)
+    def get_post_by_slug(slug, user=None):
+        queryset = annotate_post_engagement(Post.objects.filter(slug=slug), user)
+        post = get_object_or_404(queryset)
         PostService._migrate_legacy_cover_if_needed(post)
         return post
 

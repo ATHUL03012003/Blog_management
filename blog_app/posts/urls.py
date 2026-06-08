@@ -1,4 +1,5 @@
 from django.urls import path
+from comments.views import PostCommentListCreateView, PostLikeView, PostCommentsToggleView
 from .views import (
     CreatePostView,
     PostListView,
@@ -28,6 +29,12 @@ urlpatterns = [
     path("review-queue/", ReviewQueueView.as_view(), name="review-queue"),
 
     path("admin/all/", AdminAllPostsView.as_view(), name="admin-all-posts"),
+
+    path("<slug:slug>/comments/toggle/", PostCommentsToggleView.as_view(), name="post-comments-toggle"),
+
+    path("<slug:slug>/comments/", PostCommentListCreateView.as_view(), name="post-comments"),
+
+    path("<slug:slug>/like/", PostLikeView.as_view(), name="post-like"),
 
     path("<slug:slug>/", PostDetailView.as_view(), name="post-detail"),
 

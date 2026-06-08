@@ -18,5 +18,6 @@ class Post(models.Model):
     image = models.URLField(max_length=500, blank=True, null=True)
     rejection_reason = models.TextField(blank=True)
     improvement_areas = models.TextField(blank=True)
+    comments_enabled = models.BooleanField(default=True)
     def __str__(self):
         return self.title

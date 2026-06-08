@@ -26,3 +26,5 @@ class RoleChangeRequestStatus(models.TextChoices):
 class NotificationType(models.TextChoices):
     ROLE_CHANGE_REQUEST = "role_change_request", "Role change request"
     ROLE_CHANGE_RESOLVED = "role_change_resolved", "Role change resolved"
+    COMMENT_WARNING = "comment_warning", "Comment warning"
+    COMMENT_SUSPENSION = "comment_suspension", "Comment suspension"
