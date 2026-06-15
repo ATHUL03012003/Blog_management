@@ -116,9 +116,13 @@ REST_FRAMEWORK = {
     ),
 }
 from datetime import timedelta
+
+JWT_ACCESS_TOKEN_MINUTES = int(os.getenv('JWT_ACCESS_TOKEN_MINUTES', '60'))
+JWT_REFRESH_TOKEN_HOURS = int(os.getenv('JWT_REFRESH_TOKEN_HOURS', '24'))
+
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=JWT_ACCESS_TOKEN_MINUTES),
+    'REFRESH_TOKEN_LIFETIME': timedelta(hours=JWT_REFRESH_TOKEN_HOURS),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,
     'AUTH_HEADER_TYPES': ('Bearer',),
