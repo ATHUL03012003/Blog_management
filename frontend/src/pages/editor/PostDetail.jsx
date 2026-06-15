@@ -10,6 +10,9 @@ import { readerGlassSx } from '../../components/reader/ReaderLayout';
 import PostStatusChip from '../../components/author/PostStatusChip';
 import BlogArticleRenderer from '../../components/author/BlogArticleRenderer';
 import { editorPaths } from '../../constants/editorPaths';
+import PostEngagement from '../../components/engagement/PostEngagement';
+import ArticleLikeBar from '../../components/engagement/ArticleLikeBar';
+import { POST_STATUS } from '../../constants/postStatus';
 
 export default function PostDetail() {
   const { slug } = useParams();
@@ -60,11 +63,24 @@ export default function PostDetail() {
           <Box component="img" src={mediaUrl(post.image)} alt={post.title} sx={{ width: '100%', maxHeight: 400, objectFit: 'cover', borderRadius: 2, mb: 3 }} />
         )}
         <Typography variant="h4" fontWeight={800} gutterBottom sx={{ color: '#f0f9ff' }}>{post.title}</Typography>
+        {post.status === POST_STATUS.PUBLISHED && (
+          <ArticleLikeBar
+            slug={slug}
+            post={post}
+            onPostUpdate={(updates) => setPost((prev) => ({ ...prev, ...updates }))}
+          />
+        )}
         {post.excerpt && (
           <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 3, fontStyle: 'italic' }}>{post.excerpt}</Typography>
         )}
         <BlogArticleRenderer html={post.content} />
       </Box>
+
+      <PostEngagement
+        slug={slug}
+        post={post}
+        onPostUpdate={(updates) => setPost((prev) => ({ ...prev, ...updates }))}
+      />
     </Box>
   );
 }

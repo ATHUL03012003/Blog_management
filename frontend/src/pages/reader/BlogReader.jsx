@@ -27,6 +27,9 @@ import {
 import { translateText } from '../../utils/translateContent';
 import { isHtmlContent } from '../../utils/sanitizeHtml';
 import BlogArticleRenderer from '../../components/author/BlogArticleRenderer';
+import PostEngagement from '../../components/engagement/PostEngagement';
+import ArticleLikeBar from '../../components/engagement/ArticleLikeBar';
+import { POST_STATUS } from '../../constants/postStatus';
 
 export default function BlogReader() {
   const { slug } = useParams();
@@ -209,6 +212,14 @@ export default function BlogReader() {
               {displayTitle || post.title}
             </Typography>
 
+            {post.status === POST_STATUS.PUBLISHED && (
+              <ArticleLikeBar
+                slug={slug}
+                post={post}
+                onPostUpdate={(updates) => setPost((prev) => ({ ...prev, ...updates }))}
+              />
+            )}
+
             {isHtmlContent(displayContent || post.content) ? (
               <BlogArticleRenderer html={displayContent || post.content} />
             ) : (
@@ -227,6 +238,14 @@ export default function BlogReader() {
             )}
           </Box>
         </AnimatePresence>
+      )}
+
+      {post && !loading && !error && (
+        <PostEngagement
+          slug={slug}
+          post={post}
+          onPostUpdate={(updates) => setPost((prev) => ({ ...prev, ...updates }))}
+        />
       )}
     </Box>
   );
