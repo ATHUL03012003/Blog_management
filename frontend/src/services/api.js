@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { clearStoredSession } from '../utils/authStorage';
+import { clearStoredSession, isSessionExpired, touchSessionActivity } from '../utils/authStorage';
 
 const api = axios.create({
   baseURL: 'http://localhost:8000',
@@ -32,7 +32,10 @@ api.interceptors.request.use(
 
 // Response Interceptor: Handle Token Refresh logic
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    touchSessionActivity();
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
     // Prevent infinite loops if refresh fails
@@ -44,10 +47,16 @@ api.interceptors.response.use(
     ) {
       originalRequest._retry = true;
       try {
+        if (isSessionExpired()) {
+          clearStoredSession();
+          window.location.href = '/sign-in';
+          return Promise.reject(error);
+        }
         const refresh = localStorage.getItem('refresh');
         if (refresh) {
           const response = await axios.post('http://localhost:8000/api/token/refresh/', { refresh });
           localStorage.setItem('access', response.data.access);
+          touchSessionActivity();
           originalRequest.headers.Authorization = `Bearer ${response.data.access}`;
           return api(originalRequest); // Retry the original request
         }

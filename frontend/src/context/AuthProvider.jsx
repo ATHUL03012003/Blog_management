@@ -1,19 +1,88 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import api from '../services/api';
-import { clearStoredSession, loadStoredUser } from '../utils/authStorage';
+import {
+  clearStoredSession,
+  isAccessTokenExpired,
+  isSessionExpired,
+  loadStoredUser,
+  markSessionStarted,
+  touchSessionActivity,
+} from '../utils/authStorage';
+import { SESSION_CHECK_INTERVAL_MS } from '../constants/session';
 import { ROLE_MAP } from '../constants/roles';
 import { AuthContext } from './authContext';
+
+const ACTIVITY_EVENTS = ['mousedown', 'keydown', 'scroll', 'touchstart'];
 
 export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    setUser(loadStoredUser());
-    setLoading(false);
+  const expireSession = useCallback(() => {
+    clearStoredSession();
+    setUser(null);
+    navigate('/sign-in', { replace: true });
+  }, [navigate]);
+
+  const refreshAccessToken = useCallback(async () => {
+    const refresh = localStorage.getItem('refresh');
+    if (!refresh) return false;
+
+    try {
+      const response = await axios.post('http://localhost:8000/api/token/refresh/', { refresh });
+      localStorage.setItem('access', response.data.access);
+      touchSessionActivity();
+      return true;
+    } catch {
+      return false;
+    }
   }, []);
+
+  const restoreSession = useCallback(async () => {
+    if (isSessionExpired()) {
+      clearStoredSession();
+      setUser(null);
+      return;
+    }
+
+    if (isAccessTokenExpired()) {
+      const refreshed = await refreshAccessToken();
+      if (!refreshed) {
+        clearStoredSession();
+        setUser(null);
+        return;
+      }
+    }
+
+    setUser(loadStoredUser());
+  }, [refreshAccessToken]);
+
+  useEffect(() => {
+    restoreSession().finally(() => setLoading(false));
+  }, [restoreSession]);
+
+  useEffect(() => {
+    if (!user) return undefined;
+
+    const checkExpiry = () => {
+      if (isSessionExpired()) {
+        expireSession();
+      }
+    };
+
+    const onActivity = () => touchSessionActivity();
+
+    ACTIVITY_EVENTS.forEach((event) => window.addEventListener(event, onActivity, { passive: true }));
+    const intervalId = window.setInterval(checkExpiry, SESSION_CHECK_INTERVAL_MS);
+
+    return () => {
+      ACTIVITY_EVENTS.forEach((event) => window.removeEventListener(event, onActivity));
+      window.clearInterval(intervalId);
+    };
+  }, [user, expireSession]);
 
   const persistSession = (data) => {
     const { access, refresh, user: userData } = data;
@@ -25,6 +94,7 @@ export default function AuthProvider({ children }) {
     localStorage.setItem('access', access);
     localStorage.setItem('refresh', refresh);
     localStorage.setItem('user', JSON.stringify(userData));
+    markSessionStarted();
     setUser(userData);
 
     if (userData?.role !== undefined && ROLE_MAP[userData.role]) {
@@ -95,6 +165,7 @@ export default function AuthProvider({ children }) {
   const updateSessionUser = (userData) => {
     if (!userData) return;
     localStorage.setItem('user', JSON.stringify(userData));
+    touchSessionActivity();
     setUser(userData);
   };
 
