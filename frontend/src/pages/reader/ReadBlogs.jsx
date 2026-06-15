@@ -13,6 +13,8 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import ModeCommentIcon from '@mui/icons-material/ModeComment';
 import { motion } from 'framer-motion';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { fetchPublishedPosts, mediaUrl } from '../../services/posts';
@@ -144,6 +146,20 @@ export default function ReadBlogs() {
                     <Typography variant="body2" color="text.secondary" sx={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                       {post.excerpt || 'Open to read this story in your preferred language.'}
                     </Typography>
+                    <Box sx={{ display: 'flex', gap: 2, mt: 1.5 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <FavoriteBorderIcon sx={{ fontSize: 16, color: '#f472b6' }} />
+                        <Typography variant="caption" color="text.secondary">
+                          {post.like_count ?? 0}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <ModeCommentIcon sx={{ fontSize: 16, color: '#7dd3fc' }} />
+                        <Typography variant="caption" color="text.secondary">
+                          {post.comment_count ?? 0}
+                        </Typography>
+                      </Box>
+                    </Box>
                   </CardContent>
                 </Card>
               </Box>

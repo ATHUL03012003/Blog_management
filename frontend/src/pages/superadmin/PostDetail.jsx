@@ -28,6 +28,8 @@ import RejectionFeedback from '../../components/author/RejectionFeedback';
 import { superadminPaths } from '../../constants/superadminPaths';
 import { POST_STATUS } from '../../constants/postStatus';
 import parseApiError from '../../utils/parseApiError';
+import PostEngagement from '../../components/engagement/PostEngagement';
+import ArticleLikeBar from '../../components/engagement/ArticleLikeBar';
 
 export default function PostDetail() {
   const { slug } = useParams();
@@ -153,6 +155,13 @@ export default function PostDetail() {
         <Typography variant="h4" fontWeight={800} gutterBottom sx={{ color: '#f0f9ff', fontSize: { xs: '1.5rem', md: '2.125rem' } }}>
           {post.title}
         </Typography>
+        {post.status === POST_STATUS.PUBLISHED && (
+          <ArticleLikeBar
+            slug={slug}
+            post={post}
+            onPostUpdate={(updates) => setPost((prev) => ({ ...prev, ...updates }))}
+          />
+        )}
         {post.excerpt && (
           <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 3, fontStyle: 'italic' }}>
             {post.excerpt}
@@ -160,6 +169,12 @@ export default function PostDetail() {
         )}
         <BlogArticleRenderer html={post.content} />
       </Box>
+
+      <PostEngagement
+        slug={slug}
+        post={post}
+        onPostUpdate={(updates) => setPost((prev) => ({ ...prev, ...updates }))}
+      />
 
       <Dialog open={deleteOpen} onClose={() => !deleting && setDeleteOpen(false)} fullWidth maxWidth="xs">
         <DialogTitle>Delete post?</DialogTitle>

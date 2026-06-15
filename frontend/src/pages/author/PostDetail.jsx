@@ -21,6 +21,8 @@ import { canEditPost, canSubmitForReview, canAuthorPublish, POST_STATUS } from '
 import PublishIcon from '@mui/icons-material/Publish';
 import RejectionFeedback from '../../components/author/RejectionFeedback';
 import parseApiError from '../../utils/parseApiError';
+import PostEngagement from '../../components/engagement/PostEngagement';
+import ArticleLikeBar from '../../components/engagement/ArticleLikeBar';
 
 export default function PostDetail() {
   const { slug } = useParams();
@@ -181,6 +183,14 @@ export default function PostDetail() {
           {post.title}
         </Typography>
 
+        {post.status === POST_STATUS.PUBLISHED && (
+          <ArticleLikeBar
+            slug={slug}
+            post={post}
+            onPostUpdate={(updates) => setPost((prev) => ({ ...prev, ...updates }))}
+          />
+        )}
+
         {post.excerpt && (
           <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 3, fontStyle: 'italic' }}>
             {post.excerpt}
@@ -203,6 +213,12 @@ export default function PostDetail() {
           )}
         </Box>
       </Box>
+
+      <PostEngagement
+        slug={slug}
+        post={post}
+        onPostUpdate={(updates) => setPost((prev) => ({ ...prev, ...updates }))}
+      />
     </Box>
   );
 }
